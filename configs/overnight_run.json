@@ -14,8 +14,8 @@
       "seed": 1231470895
     }
   ],
-  "deadline_utc": "2026-11-13T17:00:00+00:00",
-  "report_reserve_minutes": 30,
+  "deadline_utc": "2026-11-13T18:30:00+00:00",
+  "report_reserve_minutes": 15,
   "reference_shared": "results/full/shared/527ca756e205",
   "pair_B_redraw": {
     "seed": 2158728332,

@@ -6,33 +6,54 @@ We study whether tiny, correctly labeled changes to 1% of training images can te
 
 <!-- RESULTS_START -->
 
-**Time-limited pilot: 4/4 scheduled configurations completed.** This uses one source/target pair (0 → 1), seed 17, with the original full CIFAR-10 training recipe and saved checkpoints. The original 40-experiment sweep is archived.
+# Overnight multi-pair ablation
 
-| Configuration | Paper ASR (reference) | Pilot ASR | Clean accuracy | Noise-control ASR | Status |
-|---|---:|---:|---:|---:|---|
-| Fixed patch location | 19.25% | 2.70% | 92.05% | 2.30% | Complete |
-| Random patch location | 33.95% | 36.60% | 91.70% | 2.30% | Complete |
-| Random patch + retraining | 59.42% | — | — | — | Outside four-hour scope |
-| Random patch + selection | 63.49% | 98.20% | 92.34% | 0.60% | Complete |
-| Full attack: random patch + retraining + selection | 85.27% | 99.90% | 92.22% | 0.60% | Complete |
+Clean baseline patched ASR on original pair: **1.50% (15/1,000)**. New pairs reuse the same clean baseline/surrogate weights, with newly evaluated pair-specific clean controls.
 
-**There is one trial per configuration. Standard errors and confidence intervals are unavailable.** The paper averages multiple class pairs; its reference values cannot be compared as equivalent estimates. This pilot illustrates behavior on one pair and does not establish population-level effect sizes.
+| Configuration | Paper ASR Â± SE | Measured ASR Â± SE | n | Clean accuracy |
+|---|---:|---:|---:|---:|
+| fixed | 19.25 Â± 3.01% | 4.00 Â± 0.93% | 3 | 92.34% |
+| random | 33.95 Â± 4.57% | 56.17 Â± 20.88% | 3 | 92.20% |
+| retrain | 59.42 Â± 5.78% | pending | 0 | pending |
+| select | 63.49 Â± 6.13% | 90.97 Â± 7.89% | 3 | 92.37% |
+| full | 85.27 Â± 5.90% | 99.77 Â± 0.07% | 3 | 92.41% |
 
-![Clean versus poisoned examples](reports/four_hour/poison_grid.png)
+**Unequal n:** each row reports its own completed pair count; arms with different n cover different pair sets. Only matched pairs enter each difference below. One pair has no across-pair error bar.
 
-![Measured gradient alignment](reports/four_hour/alignment.png)
+- random minus fixed: +52.17 pp; matched n=3; 95% CI=[-38.96643525106311, 143.29977252327006].
+- select minus random: +34.80 pp; matched n=3; 95% CI=[-40.98533419030911, 110.585340134879].
+- full minus random: +43.60 pp; matched n=3; 95% CI=[-46.374838821383655, 133.57484467058612].
+- full minus select: +8.80 pp; matched n=3; 95% CI=[-25.027171568361467, 42.627171472994036].
 
-Alignment is a diagnostic measured on small training subsets. The clean curve uses fixed target examples and poisoned curves use selected poisons, so their gap is not a comparison of identical examples.
+## Control status
 
-The clean control achieved 92.18% ordinary accuracy and 1.50% patched ASR. Every completed trial passed the pixel-space budget, unchanged-label, target-only selection, exact poison-count, and trigger-absence checks.
+- Clean baseline, pair 0â†’1, seed 17: patched ASR **1.50%**, clean accuracy 92.18%.
+- Clean baseline, pair 9â†’5, seed 368152593: patched ASR **0.30%**, clean accuracy 92.18%.
+- Clean baseline, pair 4â†’6, seed 1231470895: patched ASR **3.20%**, clean accuracy 92.18%.
+- Pair A, gradient noise control: ASR 0.20%.
+- Pair A, random noise control: ASR 0.10%.
+- Pair B, gradient noise control: ASR 0.10%.
+- Pair B, random noise control: ASR 0.60%.
 
-**What the completed measurements show.** On this pair, the full attack reached 99.90% ASR with 92.22% clean accuracy; its matched noise-only control reached 0.60% ASR. Random placement changed ASR by +33.90 percentage points on this pair. Selection changed ASR by +61.60 percentage points on this pair. Retraining with selection enabled changed ASR by +1.70 percentage points on this pair. These are single-pair observations; the small sample does not establish how the effects vary across other source/target pairs.
+## Queue outcomes
 
-**Implementation lesson.** The observed interruption was a Windows lock on a progress file. Bounded retries and isolating display failures allowed checkpoint-based recovery. The two-pass global-gradient calculation avoided retaining all poison activation graphs, and direct-gradient, finite-difference, and recovery tests checked its behavior.
+- 1: pair A, full, attack: complete.
+- 2: pair B, full, attack: complete.
+- 3: pair A, fixed, attack: complete.
+- 4: pair A, random, attack: complete.
+- 5: pair A, select, attack: complete.
+- 6: pair B, fixed, attack: complete.
+- 7: pair B, random, attack: complete.
+- 8: pair B, select, attack: complete.
+- 9: pair A, full, noise: complete.
+- 10: pair A, fixed, noise: complete.
+- 11: pair B, full, noise: complete.
+- 12: pair B, fixed, noise: complete.
 
-The four-hour budget reserves 15 minutes for analysis and writing. The standalone retraining-only arm and seven additional class pairs are outside this scope. Any phase unfinished at the deadline remains checkpointed and is marked incomplete. The budget covers the remaining work: the full attack and parts of the fixed arm were computed before this window and are reused.
+![Gradient alignment](reports/overnight/alignment.png)
 
-**Verification:** 28 tests passed, including global-gradient and finite-difference checks, CUDA double-backward, checkpoint recovery, Windows file locks, deadline enforcement, and single-pair reporting.
+Completed artifacts from the earlier pilot are preserved. No reduced-fidelity runs were added. The 28-test pilot verification is preserved; overnight changes have separate validation.
+
 
 <!-- RESULTS_END -->
 

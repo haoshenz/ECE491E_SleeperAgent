@@ -127,7 +127,11 @@ def bounded_report(end):
         stop_compute(child)
         return False
 
-def run():
+def limits():
+    p=plan(); end=datetime.fromisoformat(p['deadline_utc'])
+    return end,end-timedelta(minutes=p['report_reserve_minutes'])
+
+def run(adopt_worker=None):
     from scripts.progress import process_alive
     pid_path=ROOT/'results/overnight/runner.pid'
     if pid_path.exists():
@@ -135,7 +139,7 @@ def run():
         if old.isdigit() and int(old)!=os.getpid() and process_alive(int(old)):
             raise RuntimeError('Overnight runner already active')
     atomic_write_text(str(os.getpid()),pid_path)
-    p=plan(); end=datetime.fromisoformat(p['deadline_utc']); cutoff=end-timedelta(minutes=30)
+    p=plan(); end,cutoff=limits()
     jobs=read(ROOT/'results/overnight/queue.json',{}).get('jobs',queue())
     def save(state):
         value={'state':state,'mode':'overnight','jobs':jobs,'updated_utc':datetime.now(timezone.utc).isoformat()}
@@ -148,32 +152,54 @@ def run():
             save('reporting'); save('complete' if bounded_report(end) else 'failed'); return
         time.sleep(10)
     # Let the current runner finish its own report before taking over.
-    while read(ROOT/'results/run_status.json',{}).get('state')=='running':
+    while (read(ROOT/'results/run_status.json',{}).get('state')=='running'
+           and read(ROOT/'results/run_status.json',{}).get('mode')=='four_hour'):
         if datetime.now(timezone.utc)>=cutoff: break
         time.sleep(5)
     save('running')
     atomic_write_text(str(os.getpid()),ROOT/'results/runner.pid')
     for i,j in enumerate(jobs):
         if j['state']=='complete': continue
+        end,cutoff=limits()
+        if adopt_worker is not None and j['state']=='running':
+            save('running')
+            while process_alive(adopt_worker) and datetime.now(timezone.utc)<limits()[1]: time.sleep(5)
+            if process_alive(adopt_worker):
+                subprocess.run(['taskkill','/PID',str(adopt_worker),'/T','/F'],check=False,
+                               stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                j['state']='incomplete_at_cutoff'; break
+            if j['kind']=='attack': complete=(config(j)[1]/'result.json').exists()
+            else:
+                method='gradient' if j['arm']=='full' else 'random'
+                complete=(ROOT/f'results/overnight/controls/{j["pair"]["name"]}_{method}.json').exists()
+            j['state']='complete' if complete else 'failed'
+            adopt_worker=None; save('running'); continue
         remaining=(cutoff-datetime.now(timezone.utc)).total_seconds()
         if remaining<=0: break
         j['state']='running'; save('running')
         child=subprocess.Popen([sys.executable,'-u',str(Path(__file__).resolve()),'--worker',str(i)],cwd=ROOT,
                                stdout=sys.stdout,stderr=sys.stderr,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
         try:
-            code=child.wait(timeout=remaining); j['state']='complete' if code==0 else 'failed'
+            while True:
+                end,cutoff=limits(); remaining=(cutoff-datetime.now(timezone.utc)).total_seconds()
+                if remaining<=0: raise subprocess.TimeoutExpired('compute cutoff',0)
+                try:
+                    code=child.wait(timeout=min(10,remaining)); break
+                except subprocess.TimeoutExpired:
+                    if datetime.now(timezone.utc)>=limits()[1]: raise
+            j['state']='complete' if code==0 else 'failed'
         except subprocess.TimeoutExpired:
             from scripts.run_four_hour import stop_compute
             stop_compute(child); j['state']='incomplete_at_cutoff'; save('reporting'); break
         save('running')
     for j in jobs:
         if j['state'] in ('pending','running'): j['state']='incomplete_not_reached'
-    save('reporting'); save('complete' if bounded_report(end) else 'failed')
+    save('reporting'); save('complete' if bounded_report(limits()[0]) else 'failed')
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(); parser.add_argument('--worker',type=int); parser.add_argument('--dashboard',action='store_true'); parser.add_argument('--report',action='store_true')
+    parser=argparse.ArgumentParser(); parser.add_argument('--worker',type=int); parser.add_argument('--dashboard',action='store_true'); parser.add_argument('--report',action='store_true'); parser.add_argument('--adopt-worker',type=int)
     args=parser.parse_args()
     if args.worker is not None: worker(args.worker)
     elif args.dashboard: dashboard(True)
     elif args.report: report()
-    else: run()
+    else: run(args.adopt_worker)

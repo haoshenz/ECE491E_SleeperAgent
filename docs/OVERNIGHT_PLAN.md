@@ -1,6 +1,6 @@
 # Overnight multi-pair ablation
 
-Hard stop: **Friday November 13, 2026, 7:00 AM Hawaii time**. Compute stops at **6:30 AM**; the final 30 minutes are reserved for analysis and reporting. The previous evening deadline is removed.
+Hard stop: **Friday November 13, 2026, 8:30 AM Hawaii time**. Compute stops at **8:15 AM**; the final 15 minutes are reserved for analysis and reporting. The previous evening deadline is removed.
 
 The current four-arm pilot on 0→1 finishes first without interruption. The overnight controller waits for its results and report before starting any new compute.
 

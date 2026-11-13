@@ -99,6 +99,9 @@ def render_dashboard(state):
         groups.append(dict(pair,directories={a:night.config({'pair':pair,'arm':a})[1] for a in ARMS}))
     active=next((j for j in state['jobs'] if j['state']=='running'),None)
     log_path=root/('results/overnight/run.log' if state['state']!='waiting_for_pilot' else 'results/run.log')
+    if state['state']!='waiting_for_pilot':
+        logs=[f for f in (root/'results/overnight').glob('run*.log') if '.err.' not in f.name]
+        if logs: log_path=max(logs,key=lambda f:f.stat().st_mtime)
     log=log_path.read_text(errors='replace') if log_path.exists() else ''
     log=log.rsplit('COMPLETED ',1)[-1] if 'COMPLETED ' in log else log
     latest=next((line for line in reversed(log.splitlines()) if re.search(r'epoch \d+/|craft \d+/|selection \d+/',line)), '')
@@ -126,7 +129,10 @@ def render_dashboard(state):
     done=sum(counts.values())
     epoch_seconds,craft_seconds,selection_seconds=measured_rates(records)
     estimates=estimate_schedule(state,records,now,epoch_seconds,craft_seconds,selection_seconds,latest)
-    cutoff=end.replace(hour=6,minute=30,second=0,microsecond=0)
+    reserve=p['report_reserve_minutes']
+    cutoff=end-timedelta(minutes=reserve)
+    cutoff_label=cutoff.strftime('%I:%M %p')
+    end_label=end.strftime('%I:%M %p')
     def finish_text(estimate):
         if estimate['finished']: return 'Done'
         if estimate['terminal']: return 'Incomplete'
@@ -134,7 +140,7 @@ def render_dashboard(state):
         return value+(' — past cutoff' if estimate['finish']>cutoff else '')
     lines=['# Experiment progress — all three pairs','',f'Updated: {now:%b %d, %I:%M:%S %p} Hawaii time. Refreshes every 10 seconds.','',
            f'**Attack experiments finished: {done}/12 ({done/12:.0%}).** Noise controls are counted separately below.',
-           f'**Deadline: Friday 7:00 AM HST.** Compute stops at **6:30 AM**. Time remaining: **{left//3600}h {(left%3600)//60:02d}m**.','']
+           f'**Deadline: Friday {end_label} HST.** Compute stops at **{cutoff_label}**. Time remaining: **{left//3600}h {(left%3600)//60:02d}m**.','']
     if active:
         x=active['pair']; lines += [f'**Working now: Pair {x["name"]} — {NAMES[x["source"]]} → {NAMES[x["target"]]}, {LABELS[active["arm"]]}**'+(' — noise control.' if active['kind']=='noise' else '.'),'']
     elif state['state']=='waiting_for_pilot': lines+=['**Working now: finishing the original pair before starting A or B.**','']
@@ -143,7 +149,7 @@ def render_dashboard(state):
     lines += [f'**Timing basis:** {epoch_seconds:.1f} seconds/training round; '
               f'{craft_seconds:.2f} seconds/crafting update. Estimates refresh with measured progress.',
               'Finish times include earlier queued work in your exact order. Allow roughly **15–25% variation**; '
-              '**“past cutoff” means the step may not finish or start before 6:30 AM**. Settings and queue order are unchanged.','']
+              f'**“past cutoff” means the step may not finish or start before {cutoff_label}**. Settings and queue order are unchanged.','']
     lines+=['Clean unpoisoned baseline on the original pair: **1.50% patched ASR (15/1,000)**.',
             'The clean baseline and initial practice model are reused for A and B. No new training is needed for those two initial models.','',
             '## At a glance','', '| Pair | Images being confused | Attack experiments finished |','|---|---|---:|']
@@ -191,10 +197,10 @@ def render_dashboard(state):
                 time_text=duration(phase['seconds']); finish=phase['finish'].strftime('%a %I:%M %p')
                 if phase['finish']>cutoff: finish+=' — past cutoff'
             lines.append(f'| {j["number"]} / {j["pair"]["name"]} | {phase["label"]} | {time_text} | {finish} |')
-    lines += ['| Final reporting | Analysis, figures, README | Up to 30 min | Fri 07:00 AM hard stop |']
+    lines += [f'| Final reporting | Analysis, figures, README | Up to {reserve} min | Fri {end_label} hard stop |']
     lines+=['','## Reporting coverage','', '| Setup | Completed pairs (n) |','|---|---:|']
     for arm in ARMS: lines.append(f'| {LABELS[arm]} | {counts[arm]}/3 |')
     lines+=['','Only completed attacks contribute results. Different n means different pair coverage; comparisons use matched pairs only.',
             'Crafting updates, refreshes, and victim rounds are separate work units, not equal chunks of time. A high crafting cosine is not the final attack success rate.',
-            'At 6:30 AM, compute stops and analysis/reporting begins. Final report: `reports/overnight/README.md`.','']
+            f'At {cutoff_label}, compute stops and analysis/reporting begins. Final report: `reports/overnight/README.md`.','']
     return '\n'.join(lines)

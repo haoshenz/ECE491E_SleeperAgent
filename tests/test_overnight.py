@@ -24,7 +24,7 @@ def test_recorded_draw_and_deadline():
     pairs=[(x['source'],x['target']) for x in p['pairs']]
     assert len(set(pairs))==2 and (0,1) not in pairs
     assert all(s!=t for s,t in pairs)
-    assert p['deadline_utc']=='2026-11-13T17:00:00+00:00'
+    assert p['deadline_utc']=='2026-11-13T18:30:00+00:00'
 
 def test_dashboard_contains_all_pairs_and_all_twelve_setups():
     from scripts.overnight_display import render_dashboard,NAMES

@@ -1,6 +1,6 @@
 # Setup and reproduction
 
-The active schedule is now [the overnight plan](docs/OVERNIGHT_PLAN.md), ending Friday at 7:00 AM Hawaii time with compute stopping at 6:30 AM. Run `.venv/Scripts/python.exe -u scripts/overnight.py` to resume its exact queue. It waits for the current pilot to finish first. The earlier four-hour runner remains available for the original pilot; do not start a second controller while one is active.
+The active schedule is now [the overnight plan](docs/OVERNIGHT_PLAN.md), ending Friday at 8:30 AM Hawaii time with compute stopping at 8:15 AM. Run `.venv/Scripts/python.exe -u scripts/overnight.py` to resume its exact queue. It waits for the current pilot to finish first. The earlier four-hour runner remains available for the original pilot; do not start a second controller while one is active.
 
 ## Environment
 
