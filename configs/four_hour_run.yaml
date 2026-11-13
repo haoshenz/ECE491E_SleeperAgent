@@ -1,8 +1,0 @@
-# Scheduling only: scientific settings and checkpoint fingerprints stay unchanged.
-base_config: configs/cifar10_full.yaml
-pair_indices: [0]
-arms: [full, fixed, random, select]
-hours: 4
-report_reserve_minutes: 15
-output: results/four_hour
-report: reports/four_hour

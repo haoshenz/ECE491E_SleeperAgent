@@ -34,7 +34,6 @@ def summarize(rows, output):
     for arm, paper in PAPER.items():
         matched = [r for r in rows if r['arm'] == arm]
         if not matched:
-            lines.append(f'| {arm} | {paper[0]:.2f} ± {paper[1]:.2f}% | pending | 0 | pending |')
             continue
         s = stats([r['metrics']['asr']*100 for r in matched])
         result['arms'][arm] = s

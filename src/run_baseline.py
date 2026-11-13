@@ -3,10 +3,11 @@ import argparse
 import copy
 from pathlib import Path
 import torch
-from .common import configure, load_config, fingerprint, write_json
+from .common import configure, load_config, write_json
 from .data import load_data
 from .patch import make_patch
 from .victim import train
+from .run_trial import shared_directory
 
 
 def main():
@@ -19,9 +20,7 @@ def main():
     seed = cfg['seeds'][0]
     cfg.update(source=source, target=target, seed=seed)
     x, y, tx, ty = load_data(cfg)
-    cache_cfg = {k: v for k, v in cfg.items() if k not in (
-        'selection', 'patch_location', 'retraining_factor', 'craft_steps', 'craft_lr', 'craft_lr_units', 'output')}
-    directory = Path(cfg['output'])/'shared'/fingerprint(cache_cfg)/'clean_victim'
+    directory = shared_directory(cfg)/'clean_victim'
     patch = make_patch(cfg['patch_size'], seed+1, x.device)
     candidates = torch.where(y == source)[0]
     order = torch.randperm(len(candidates), generator=torch.Generator().manual_seed(seed+2))
@@ -32,7 +31,7 @@ def main():
     result = {'metrics': history[-1], 'seconds': seconds, 'baseline_gate': cfg['baseline_min_accuracy']}
     write_json(result, Path(cfg['output'])/'baseline.json')
     if history[-1]['clean_accuracy'] < cfg['baseline_min_accuracy']:
-        raise RuntimeError('Baseline gate failed; see results/full/baseline.json')
+        raise RuntimeError(f"Baseline gate failed; see {Path(cfg['output'])/'baseline.json'}")
     print(f'BASELINE PASSED in {seconds:.0f}s', flush=True)
 
 

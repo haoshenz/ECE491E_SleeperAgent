@@ -1,7 +1,0 @@
-{
-  "passed": 28,
-  "failed": 0,
-  "command": ".venv/Scripts/python.exe -m pytest -q",
-  "documentation_links_checked": true,
-  "updated_utc": "2026-11-13T03:29:47.649301+00:00"
-}

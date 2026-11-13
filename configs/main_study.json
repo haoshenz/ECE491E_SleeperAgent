@@ -1,0 +1,11 @@
+{
+  "description": "Three source/target pairs used in the README results. Training settings come from configs/cifar10_full.yaml.",
+  "base_config": "configs/cifar10_full.yaml",
+  "output": "results/main_study",
+  "arms": ["fixed", "random", "select", "full"],
+  "pairs": [
+    {"source": 0, "target": 1, "seed": 17, "note": "First pair of the original eight-pair plan"},
+    {"source": 9, "target": 5, "seed": 368152593, "note": "Uniform draw without replacement from the 90 ordered pairs excluding 0->1, sampling seed 1536078799"},
+    {"source": 4, "target": 6, "seed": 1231470895, "note": "Redrawn (seed 2158728332) from classes [2, 3, 4, 6, 7, 8] to avoid repeating truck; the original draw was 9->7"}
+  ]
+}

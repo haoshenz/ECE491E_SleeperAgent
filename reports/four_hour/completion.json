@@ -1,9 +1,0 @@
-{
-  "generated_utc": "2026-11-13T05:18:19.291762+00:00",
-  "deadline_utc": "2026-11-13T17:00:00+00:00",
-  "window_elapsed_seconds": 7324.287068,
-  "completed_configurations": 4,
-  "scheduled_configurations": 4,
-  "all_selected_complete": true,
-  "reused_prior_checkpoints": true
-}

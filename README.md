@@ -25,7 +25,7 @@ uv pip install --python .venv/Scripts/python.exe -r requirements-lock.txt
 .venv/Scripts/python.exe -m pytest -q
 ```
 
-`requirements-lock.txt` pins the exact tested versions; `requirements.txt` lists direct dependencies. More detail (resuming, logs, progress dashboard) is in [SETUP.md](SETUP.md).
+`requirements-lock.txt` pins the exact tested versions; `requirements.txt` lists direct dependencies. `results/` and `data/` are not tracked by Git; only load PyTorch checkpoints you trust.
 
 ## Run
 
@@ -43,13 +43,11 @@ uv pip install --python .venv/Scripts/python.exe -r requirements-lock.txt
 
 Use `--arms full` to run only the complete attack. Arms: `fixed` (fixed patch), `random` (random patch), `select` (+ gradient-norm selection), `full` (+ 4 surrogate retrains), `retrain` (retraining without selection). Runs checkpoint every epoch / every 5 crafting steps and skip completed trials, so re-running the same command resumes. Outputs go to `results/full/`.
 
-**The three-pair study** in this README was run by the overnight controller; pair choices and ordering are in [configs/overnight_run.json](configs/overnight_run.json):
+**The full three-pair study** shown in the results (12 attack trials plus controls; pairs and seeds in [configs/main_study.json](configs/main_study.json)). It writes `reports/main_study/measurements.json`, `summary.json` and `controls.json`:
 
 ```powershell
-.venv/Scripts/python.exe -u scripts/overnight.py
+.venv/Scripts/python.exe -u scripts/run_study.py
 ```
-
-It used an absolute November 13 deadline, so a new study needs a new schedule and output location.
 
 **Rebuild the figures and this README** from saved measurements (no training):
 
@@ -67,7 +65,7 @@ ASR is the percentage of **all 1,000 held-out source-class test images** classif
 
 ### 1. Ablation vs. the paper
 
-![Paper and reproduction ASR comparison](reports/overnight/figures/01_reproduction_vs_paper.png)
+![Paper and reproduction ASR comparison](reports/main_study/figures/01_reproduction_vs_paper.png)
 
 | Configuration | Patch during crafting | Selection | Retrains | Paper ASR ± SE | Our ASR ± SE | n | Clean accuracy |
 |---|---|---|---:|---:|---:|---:|---:|
@@ -75,13 +73,12 @@ ASR is the percentage of **all 1,000 held-out source-class test images** classif
 | Random patch | Random | Random target images | 0 | 33.95 ± 4.57% | 56.17 ± 20.88% | 3 | 92.20% |
 | Random + selection | Random | Largest full-gradient norms | 0 | 63.49 ± 6.13% | 90.97 ± 7.89% | 3 | 92.37% |
 | Full attack | Random | Largest full-gradient norms | 4 | 85.27 ± 5.90% | 99.77 ± 0.07% | 3 | 92.41% |
-| Random + retraining only | Random | Random target images | 4 | 59.42 ± 5.78% | Not run | 0 | — |
 
-Error bars are **one standard error across three pair/seed trials** (n = 3, same pairs in every arm). The retraining-only arm was outside the time budget; its missing result is not a zero. The paper's values come from a different set of trials and are reference points, not matched comparisons. Our ordering matches the paper (fixed < random < random + selection < full).
+Error bars are **one standard error across three pair/seed trials** (n = 3, same pairs in every arm). The table contains the four configurations evaluated in this study. The paper's values come from a different set of trials and are reference points, not matched comparisons. Our ordering matches the paper (fixed < random < random + selection < full).
 
 ### 2. Per-pair results
 
-![ASR by configuration for each source/target pair](reports/overnight/figures/02_pairwise_asr.png)
+![ASR by configuration for each source/target pair](reports/main_study/figures/02_pairwise_asr.png)
 
 | Source → target | Seed | Fixed | Random | Random + selection | Full |
 |---|---:|---:|---:|---:|---:|
@@ -95,7 +92,7 @@ Mean gains along the sequence: **+52.17 points** for random placement, **+34.80*
 
 ### 3. Controls: is poisoning doing the work?
 
-![Clean and noise controls, and clean classification accuracy](reports/overnight/figures/03_controls_and_accuracy.png)
+![Clean and noise controls, and clean classification accuracy](reports/main_study/figures/03_controls_and_accuracy.png)
 
 | Source → target | Clean model + patch | Random-noise control | Selected-noise control | Full attack |
 |---|---:|---:|---:|---:|
@@ -107,7 +104,7 @@ A clean model with the patch gets only **0.3–3.2%** ASR, and models trained wi
 
 ### 4. What the poisons look like
 
-![Clean, poisoned, amplified differences, and patched held-out examples](reports/overnight/figures/04_poison_examples.png)
+![Clean, poisoned, amplified differences, and patched held-out examples](reports/main_study/figures/04_poison_examples.png)
 
 Columns 1–2: the **same target-class training image** before and after poisoning (label unchanged). Column 3: the difference, amplified for visibility. Columns 4–5: a **source-class test image** without and with the trigger, labeled with the full-attack victim's predictions. One clean-correct, trigger-flipped example per pair is shown for illustration; the ASR numbers above use all 1,000 source images.
 
@@ -115,7 +112,7 @@ Every run passed checks for exactly 500 changed images, unchanged labels, target
 
 ### 5. Gradient alignment
 
-![Crafting and victim-training gradient alignment](reports/overnight/figures/05_gradient_alignment.png)
+![Crafting and victim-training gradient alignment](reports/main_study/figures/05_gradient_alignment.png)
 
 Left: alignment during crafting using the full poison gradient; dotted lines mark the four surrogate refreshes. Right: alignment while training the victim on the original pair's **16-example telemetry subset** (so its scale differs from the 500-image objective). Alignment is a diagnostic; held-out ASR and the controls are the behavioral evidence.
 
@@ -174,7 +171,7 @@ Full settings: [configs/cifar10_full.yaml](configs/cifar10_full.yaml).
 ## Limitations
 
 - Only 3 pair/seed trials per arm, so the small incremental gaps between arms are not statistically settled.
-- The retraining-only arm, more pairs/seeds, ImageNet, cross-architecture transfer, defenses, and epsilon/retraining sweeps were not run.
+- This study covers four selected configurations from Table 10. More pairs/seeds, ImageNet, cross-architecture transfer, defenses, and epsilon/retraining sweeps were not run.
 - Surrogate initial weights are shared across pairs, which saves compute but does not sample surrogate-initialization variance.
 - Reference code was consulted only for the signed-Adam schedule and the fresh-initialization retraining choice; everything else is an independent implementation.
 
@@ -182,13 +179,13 @@ Full settings: [configs/cifar10_full.yaml](configs/cifar10_full.yaml).
 
 ```text
 src/                          data, model, selection, crafting, victim training/evaluation
-scripts/                      data download, overnight multi-pair controller, progress display
+scripts/                      CIFAR-10 download, main-study runner
 analysis/build_readme.py      saved measurements → README and figures
-configs/                      full recipe, smoke config, overnight pair schedule
-reports/overnight/            frozen measurements, summary, figures used above
+configs/                      full recipe, smoke config, main-study pairs
+reports/main_study/           frozen measurements, summary, controls, figures used above
 reports/smoke/                development-only evidence
 tests/                        correctness tests
 results/, data/               local checkpoints, logs, dataset (not tracked by Git)
 ```
 
-Primary data: [measurements.json](reports/overnight/measurements.json), [summary.json](reports/overnight/summary.json), and [presentation_data.json](reports/overnight/presentation_data.json) (includes the late noise-control values).
+Primary data: [measurements.json](reports/main_study/measurements.json), [summary.json](reports/main_study/summary.json), [controls.json](reports/main_study/controls.json), and [presentation_data.json](reports/main_study/presentation_data.json) (compact export of the plotted values). The original eight-pair study design is in [docs/original_study_plan.md](docs/original_study_plan.md).

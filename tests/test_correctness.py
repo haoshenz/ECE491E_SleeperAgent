@@ -7,7 +7,7 @@ from torch.nn import functional as F
 from src.craft import alignment_step, flat_grad, average_gradient, signed_adam_step
 from src.data import augment, project, assert_integrity, STD
 from src.patch import make_patch, apply_patch
-from src.select import select_poisons
+from src.selection import select_poisons
 from src.common import append_jsonl, read_jsonl, seed_all, configure
 from src.victim import evaluate, train
 from src.models import make_model

@@ -1,0 +1,98 @@
+[
+  {
+    "source": 0,
+    "target": 1,
+    "seed": 17,
+    "clean_model": {
+      "clean_accuracy": 0.9217999577522278,
+      "source_accuracy": 0.9440000653266907,
+      "asr": 0.015000000596046448,
+      "asr_clean_correct": 0.010593220591545105,
+      "source_test_count": 1000,
+      "source_clean_correct_count": 944,
+      "asr_definition": "all held-out source images; uniformly random patch location"
+    },
+    "random_noise": {
+      "clean_accuracy": 0.9194999933242798,
+      "source_accuracy": 0.9270000457763672,
+      "asr": 0.023000001907348633,
+      "asr_clean_correct": 0.012944983318448067,
+      "source_test_count": 1000,
+      "source_clean_correct_count": 927,
+      "asr_definition": "all held-out source images; uniformly random patch location"
+    },
+    "selected_noise": {
+      "clean_accuracy": 0.91839998960495,
+      "source_accuracy": 0.9390000700950623,
+      "asr": 0.006000000052154064,
+      "asr_clean_correct": 0.002129925414919853,
+      "source_test_count": 1000,
+      "source_clean_correct_count": 939,
+      "asr_definition": "all held-out source images; uniformly random patch location"
+    }
+  },
+  {
+    "source": 9,
+    "target": 5,
+    "seed": 368152593,
+    "clean_model": {
+      "clean_accuracy": 0.9217999577522278,
+      "source_accuracy": 0.940000057220459,
+      "asr": 0.003000000026077032,
+      "asr_clean_correct": 0.0010638297535479069,
+      "source_test_count": 1000,
+      "source_clean_correct_count": 940,
+      "asr_definition": "all held-out source images; uniformly random patch location"
+    },
+    "random_noise": {
+      "clean_accuracy": 0.930899977684021,
+      "source_accuracy": 0.956000030040741,
+      "asr": 0.0010000000474974513,
+      "asr_clean_correct": 0.0010460250778123736,
+      "source_test_count": 1000,
+      "source_clean_correct_count": 956,
+      "asr_definition": "all held-out source images; uniformly random patch location"
+    },
+    "selected_noise": {
+      "clean_accuracy": 0.9274999499320984,
+      "source_accuracy": 0.9500000476837158,
+      "asr": 0.0020000000949949026,
+      "asr_clean_correct": 0.0021052630618214607,
+      "source_test_count": 1000,
+      "source_clean_correct_count": 950,
+      "asr_definition": "all held-out source images; uniformly random patch location"
+    }
+  },
+  {
+    "source": 4,
+    "target": 6,
+    "seed": 1231470895,
+    "clean_model": {
+      "clean_accuracy": 0.9217999577522278,
+      "source_accuracy": 0.9380000233650208,
+      "asr": 0.03200000151991844,
+      "asr_clean_correct": 0.027718551456928253,
+      "source_test_count": 1000,
+      "source_clean_correct_count": 938,
+      "asr_definition": "all held-out source images; uniformly random patch location"
+    },
+    "random_noise": {
+      "clean_accuracy": 0.9205999970436096,
+      "source_accuracy": 0.9420000314712524,
+      "asr": 0.006000000052154064,
+      "asr_clean_correct": 0.0031847134232521057,
+      "source_test_count": 1000,
+      "source_clean_correct_count": 942,
+      "asr_definition": "all held-out source images; uniformly random patch location"
+    },
+    "selected_noise": {
+      "clean_accuracy": 0.9162999987602234,
+      "source_accuracy": 0.9350000619888306,
+      "asr": 0.0010000000474974513,
+      "asr_clean_correct": 0.0,
+      "source_test_count": 1000,
+      "source_clean_correct_count": 935,
+      "asr_definition": "all held-out source images; uniformly random patch location"
+    }
+  }
+]

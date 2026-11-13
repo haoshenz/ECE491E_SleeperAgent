@@ -9,7 +9,7 @@ from .common import (configure, load_config, fingerprint, seed_all, atomic_save,
 from .data import load_data, project, assert_integrity
 from .models import make_model
 from .patch import make_patch
-from .select import select_poisons
+from .selection import select_poisons
 from .craft import craft
 from .victim import train, evaluate
 from .progress import report_progress
@@ -33,7 +33,17 @@ def image_grid(clean, poisoned, patch, path):
     plt.close(fig)
 
 
-def run_trial(cfg, source, target, seed, arm='custom', data=None, reference_shared=None, defer_noise=False):
+ARM_ONLY_KEYS = ('selection', 'patch_location', 'retraining_factor',
+                 'craft_steps', 'craft_lr', 'craft_lr_units', 'output')
+
+
+def shared_directory(cfg):
+    """Checkpoints (surrogate, clean victim, noise controls) shared by every arm of one pair/seed."""
+    cache_cfg = {k: v for k, v in cfg.items() if k not in ARM_ONLY_KEYS}
+    return Path(cfg['output'])/'shared'/fingerprint(cache_cfg)
+
+
+def run_trial(cfg, source, target, seed, arm='custom', data=None, reference_shared=None):
     assert source != target and source in cfg['classes'] and target in cfg['classes']
     cfg = copy.deepcopy(cfg)
     cfg.update(source=source, target=target, seed=seed)
@@ -54,9 +64,7 @@ def run_trial(cfg, source, target, seed, arm='custom', data=None, reference_shar
     order = torch.randperm(len(source_indices), generator=torch.Generator().manual_seed(seed+2))
     source_x = x[source_indices[order[:cfg['source_count']].to(x.device)]]
     # Only training data enters source gradient and selection; test data is evaluation-only.
-    cache_cfg = {k: v for k, v in cfg.items() if k not in (
-        'selection', 'patch_location', 'retraining_factor', 'craft_steps', 'craft_lr', 'craft_lr_units', 'output')}
-    shared = Path(cfg['output'])/'shared'/fingerprint(cache_cfg)
+    shared = shared_directory(cfg)
     if reference_shared is not None:
         shared = Path(reference_shared)
         for phase in ('surrogate', 'clean_victim'):
@@ -105,7 +113,7 @@ def run_trial(cfg, source, target, seed, arm='custom', data=None, reference_shar
         cfg['epochs_victim'], seed+2000, directory/'victim', source, target, patch, indices, source_x)
     metrics = evaluate(model, test_x, test_y, source, target, patch, cfg['batch_size'], seed+700)
     del model, poisoned
-    if cfg['controls'] and not defer_noise:
+    if cfg['controls']:
         seed_all(seed+800)
         noise = torch.empty_like(delta).uniform_(-cfg['epsilon'], cfg['epsilon'])
         project(noise, x[indices], cfg['epsilon'])
@@ -131,7 +139,6 @@ def run_trial(cfg, source, target, seed, arm='custom', data=None, reference_shar
                               'gpu': torch.cuda.get_device_name() if x.is_cuda else 'CPU'}}
     if reference_shared is not None:
         result['reference_shared'] = str(reference_shared)
-        result['noise_control_status'] = 'deferred' if defer_noise else 'complete'
     write_json(result, result_path)
     append_jsonl(result, Path(cfg['output'])/'results.jsonl')
     print(f'COMPLETED {trial_id}: {metrics}', flush=True)
