@@ -6,6 +6,18 @@
       "sem": null,
       "ci95": null
     },
+    "random": {
+      "n": 1,
+      "mean": 36.60000264644623,
+      "sem": null,
+      "ci95": null
+    },
+    "select": {
+      "n": 1,
+      "mean": 98.20000529289246,
+      "sem": null,
+      "ci95": null
+    },
     "full": {
       "n": 1,
       "mean": 99.9000072479248,
@@ -13,6 +25,31 @@
       "ci95": null
     }
   },
-  "paired_differences": {},
+  "paired_differences": {
+    "random minus fixed": {
+      "n": 1,
+      "mean": 33.90000257641077,
+      "sem": null,
+      "ci95": null
+    },
+    "select minus random": {
+      "n": 1,
+      "mean": 61.60000264644623,
+      "sem": null,
+      "ci95": null
+    },
+    "full minus random": {
+      "n": 1,
+      "mean": 63.30000460147858,
+      "sem": null,
+      "ci95": null
+    },
+    "full minus select": {
+      "n": 1,
+      "mean": 1.7000019550323486,
+      "sem": null,
+      "ci95": null
+    }
+  },
   "asr_definition": "all held-out source images"
 }

@@ -64,39 +64,18 @@ def worker(index):
                ROOT/f'results/overnight/controls/{x["name"]}_{cfg["selection"]}.json')
 
 def dashboard(watch):
+    from scripts.overnight_display import render_dashboard
     while True:
         state={}
         try:
             state=read(ROOT/'results/overnight/queue.json',{'jobs':queue(),'state':'waiting_for_pilot'})
-            end=datetime.fromisoformat(plan()['deadline_utc']).astimezone(ZoneInfo('Pacific/Honolulu'))
-            left=max(0,int((end-datetime.now(end.tzinfo)).total_seconds()))
-            lines=['# Overnight ablation progress','',f'Updated: {datetime.now(end.tzinfo):%b %d %I:%M:%S %p} HST.',
-                   '',f'**State: {state["state"]}. Hard stop: Friday {end:%I:%M %p} HST.**',
-                   f'Time remaining: **{left//3600}h {(left%3600)//60:02d}m**. Compute cutoff: **6:30 AM**; reporting: **6:30–7:00 AM**.','',
-                   '**Clean baseline patched ASR on pair 0→1: 1.50% (15/1,000).**',
-                   '', '## Current pilot — finishes first, unchanged','']
-            base=yaml.safe_load((ROOT/'configs/cifar10_full.yaml').read_text()); pilot=paths(base)[0]
-            for arm in ('full','fixed','random','select'):
-                d=pilot['trials'][arm][0]; r=read(d/'result.json')
-                history=read(d/'victim/history.json',[])
-                lines.append(f'- {arm}: '+('complete' if r else f'incomplete; victim {history[-1]["epoch"] if history else 0}/80'))
-            lines+=['','## Recorded random draw','',f'Sampling seed: {plan()["sampling_seed"]}.']
-            for x in plan()['pairs']: lines.append(f'- Pair {x["name"]}: **{x["source"]}→{x["target"]}**, seed **{x["seed"]}**.')
-            lines+=['','## Exact overnight order','', '| # | Pair | Arm | Work | Status |','|---:|---|---|---|---|']
-            for j in state['jobs']:
-                lines.append(f'| {j["number"]} | {j["pair"]["name"]} ({j["pair"]["source"]}→{j["pair"]["target"]}) | {j["arm"]} | {j["kind"]} | {j["state"]} |')
-            logs=ROOT/'results/overnight/run.log'
-            if logs.exists(): lines+=['','## Latest worker output','', '```text',*logs.read_text(errors='replace').splitlines()[-8:],'```']
-            lines+=['','## Final reporting','', '- Pool only identical arm settings; show n per arm and matched n for each contrast.',
-                    '- Noise controls are scheduled last and remain separate from completed attack results.',
-                    '- Unfinished jobs stay incomplete. Completed artifacts from today are preserved.',
-                    '- Report: `reports/overnight/README.md`; detailed status: `results/overnight/queue.json`.','']
-            atomic_write_text('\n'.join(lines),ROOT/'results/PROGRESS.md')
+            atomic_write_text(render_dashboard(state),ROOT/'results/PROGRESS.md')
             write_json(state,ROOT/'results/progress.json')
         except Exception as error:
             print(f'Display deferred: {error}',flush=True)
         if not watch or state.get('state') in ('complete','failed'): return
         time.sleep(10)
+
 
 def report():
     from analysis.summarize import summarize
@@ -124,7 +103,7 @@ def report():
         key=(r['source'],r['target'],r['seed'])
         if key not in seen:
             seen.add(key); c=r['clean_control']
-            text+=f'- Clean baseline, pair {key[0]}→{key[1]}, seed {key[2]}: patched ASR **{c["asr"]:.2%}**, clean accuracy {c["clean_accuracy"]:.2%}.\n'
+            text+=f'- Clean baseline, pair {key[0]}â†’{key[1]}, seed {key[2]}: patched ASR **{c["asr"]:.2%}**, clean accuracy {c["clean_accuracy"]:.2%}.\n'
     for x in plan()['pairs']:
         for method in ('gradient','random'):
             c=read(ROOT/f'results/overnight/controls/{x["name"]}_{method}.json')
@@ -136,6 +115,17 @@ def report():
     atomic_write_text(text,out/'README.md')
     main=ROOT/'README.md'; original=main.read_text(); start=original.index('<!-- RESULTS_START -->')+len('<!-- RESULTS_START -->'); end=original.index('<!-- RESULTS_END -->')
     atomic_write_text(original[:start]+'\n\n'+text.replace('(alignment.png)','(reports/overnight/alignment.png)')+'\n\n'+original[end:],main)
+
+def bounded_report(end):
+    child=subprocess.Popen([sys.executable,'-u',str(Path(__file__).resolve()),'--report'],cwd=ROOT,
+                           stdout=sys.stdout,stderr=sys.stderr,
+                           creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
+    try:
+        return child.wait(timeout=max(1,(end-datetime.now(timezone.utc)).total_seconds()))==0
+    except subprocess.TimeoutExpired:
+        from scripts.run_four_hour import stop_compute
+        stop_compute(child)
+        return False
 
 def run():
     from scripts.progress import process_alive
@@ -154,7 +144,8 @@ def run():
     save('waiting_for_pilot')
     base=yaml.safe_load((ROOT/'configs/cifar10_full.yaml').read_text()); pilot=paths(base)[0]
     while not all((pilot['trials'][a][0]/'result.json').exists() for a in ('full','fixed','random','select')):
-        if datetime.now(timezone.utc)>=cutoff: save('cutoff'); report(); save('complete'); return
+        if datetime.now(timezone.utc)>=cutoff:
+            save('reporting'); save('complete' if bounded_report(end) else 'failed'); return
         time.sleep(10)
     # Let the current runner finish its own report before taking over.
     while read(ROOT/'results/run_status.json',{}).get('state')=='running':
@@ -177,7 +168,7 @@ def run():
         save('running')
     for j in jobs:
         if j['state'] in ('pending','running'): j['state']='incomplete_not_reached'
-    save('reporting'); report(); save('complete')
+    save('reporting'); save('complete' if bounded_report(end) else 'failed')
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(); parser.add_argument('--worker',type=int); parser.add_argument('--dashboard',action='store_true'); parser.add_argument('--report',action='store_true')

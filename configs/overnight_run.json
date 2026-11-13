@@ -9,12 +9,30 @@
     },
     {
       "name": "B",
-      "source": 9,
-      "target": 7,
+      "source": 4,
+      "target": 6,
       "seed": 1231470895
     }
   ],
   "deadline_utc": "2026-11-13T17:00:00+00:00",
   "report_reserve_minutes": 30,
-  "reference_shared": "results/full/shared/527ca756e205"
+  "reference_shared": "results/full/shared/527ca756e205",
+  "pair_B_redraw": {
+    "seed": 2158728332,
+    "reason": "User requested different source classes; redraw uses classes disjoint from original pair and pair A",
+    "eligible_classes": [
+      2,
+      3,
+      4,
+      6,
+      7,
+      8
+    ],
+    "previous_pair": {
+      "name": "B",
+      "source": 9,
+      "target": 7,
+      "seed": 1231470895
+    }
+  }
 }

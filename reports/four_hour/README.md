@@ -1,13 +1,13 @@
 # Four-hour pilot report
 
-**Time-limited pilot: 2/4 scheduled configurations completed.** This uses one source/target pair (0 → 1), seed 17, with the original full CIFAR-10 training recipe and saved checkpoints. The original 40-experiment sweep is archived.
+**Time-limited pilot: 4/4 scheduled configurations completed.** This uses one source/target pair (0 → 1), seed 17, with the original full CIFAR-10 training recipe and saved checkpoints. The original 40-experiment sweep is archived.
 
 | Configuration | Paper ASR (reference) | Pilot ASR | Clean accuracy | Noise-control ASR | Status |
 |---|---:|---:|---:|---:|---|
 | Fixed patch location | 19.25% | 2.70% | 92.05% | 2.30% | Complete |
-| Random patch location | 33.95% | — | — | — | Pending / incomplete |
+| Random patch location | 33.95% | 36.60% | 91.70% | 2.30% | Complete |
 | Random patch + retraining | 59.42% | — | — | — | Outside four-hour scope |
-| Random patch + selection | 63.49% | — | — | — | Pending / incomplete |
+| Random patch + selection | 63.49% | 98.20% | 92.34% | 0.60% | Complete |
 | Full attack: random patch + retraining + selection | 85.27% | 99.90% | 92.22% | 0.60% | Complete |
 
 **There is one trial per configuration. Standard errors and confidence intervals are unavailable.** The paper averages multiple class pairs; its reference values cannot be compared as equivalent estimates. This pilot illustrates behavior on one pair and does not establish population-level effect sizes.
@@ -20,7 +20,7 @@ Alignment is a diagnostic measured on small training subsets. The clean curve us
 
 The clean control achieved 92.18% ordinary accuracy and 1.50% patched ASR. Every completed trial passed the pixel-space budget, unchanged-label, target-only selection, exact poison-count, and trigger-absence checks.
 
-**What the completed measurements show.** On this pair, the full attack reached 99.90% ASR with 92.22% clean accuracy; its matched noise-only control reached 0.60% ASR. These are single-pair observations; the small sample does not establish how the effects vary across other source/target pairs.
+**What the completed measurements show.** On this pair, the full attack reached 99.90% ASR with 92.22% clean accuracy; its matched noise-only control reached 0.60% ASR. Random placement changed ASR by +33.90 percentage points on this pair. Selection changed ASR by +61.60 percentage points on this pair. Retraining with selection enabled changed ASR by +1.70 percentage points on this pair. These are single-pair observations; the small sample does not establish how the effects vary across other source/target pairs.
 
 **Implementation lesson.** The observed interruption was a Windows lock on a progress file. Bounded retries and isolating display failures allowed checkpoint-based recovery. The two-pass global-gradient calculation avoided retaining all poison activation graphs, and direct-gradient, finite-difference, and recovery tests checked its behavior.
 
@@ -30,6 +30,10 @@ The four-hour budget reserves 15 minutes for analysis and writing. The standalon
 
 ## Measured single-pair differences
 
+- random minus fixed: +33.90 percentage points on this one pair; uncertainty unavailable.
+- select minus random: +61.60 percentage points on this one pair; uncertainty unavailable.
+- full minus random: +63.30 percentage points on this one pair; uncertainty unavailable.
+- full minus select: +1.70 percentage points on this one pair; uncertainty unavailable.
 
 ## Scope and reproduction
 

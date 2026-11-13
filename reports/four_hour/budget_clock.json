@@ -1,4 +1,6 @@
 {
   "started_utc": "2026-11-13T03:16:15.004694+00:00",
-  "deadline_utc": "2026-11-13T07:16:15.004694+00:00"
+  "deadline_utc": "2026-11-13T17:00:00+00:00",
+  "report_reserve_minutes": 30,
+  "supersedes_deadline_utc": "2026-11-13T07:16:15.004694+00:00"
 }

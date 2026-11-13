@@ -11,6 +11,8 @@ Uniform sampling without replacement from the 90 ordered source/target pairs, ex
 - A: **9→5 (truck→dog)**, trial seed **368152593**.
 - B: **9→7 (truck→horse)**, trial seed **1231470895**.
 
+Pair B was redrawn before any new experiment started, at the user?s request to avoid repeating truck. Conditional redraw seed: **2158728332**; eligible classes: [2, 3, 4, 6, 7, 8], disjoint from the original pair and A. The original draw is retained in the configuration history.
+
 The draw is recorded in `configs/overnight_run.json` and is not selected using outcomes.
 
 ## Exact queue
