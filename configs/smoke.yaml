@@ -1,0 +1,33 @@
+name: smoke
+device: cuda
+data_root: data
+output: results/smoke
+classes: [0, 1]
+train_per_class: 256
+test_per_class: 128
+architecture: resnet9
+width: 16
+batch_size: 64
+craft_batch_size: 16
+epochs_surrogate: 3
+epochs_retrain: 3
+epochs_victim: 4
+lr: 0.05
+milestones: [2, 3]
+weight_decay: 0.0004
+amp: true
+epsilon: 0.06274509803921569
+poison_count: 8
+patch_size: 8
+source_count: 32
+craft_steps: 10
+craft_lr: 0.1
+retraining_factor: 0
+selection: random
+patch_location: random
+checkpoint_every: 5
+telemetry_count: 8
+controls: true
+baseline_min_accuracy: 0.0
+pairs: [[0, 1]]
+seeds: [17]

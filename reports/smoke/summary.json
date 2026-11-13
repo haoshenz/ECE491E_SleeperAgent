@@ -1,0 +1,67 @@
+{
+  "arms": {
+    "fixed": {
+      "n": 1,
+      "mean": 41.40625,
+      "sem": null,
+      "ci95": null
+    },
+    "random": {
+      "n": 1,
+      "mean": 54.6875,
+      "sem": null,
+      "ci95": null
+    },
+    "retrain": {
+      "n": 1,
+      "mean": 41.40625,
+      "sem": null,
+      "ci95": null
+    },
+    "select": {
+      "n": 1,
+      "mean": 37.5,
+      "sem": null,
+      "ci95": null
+    },
+    "full": {
+      "n": 1,
+      "mean": 32.8125,
+      "sem": null,
+      "ci95": null
+    }
+  },
+  "paired_differences": {
+    "random minus fixed": {
+      "n": 1,
+      "mean": 13.28125,
+      "sem": null,
+      "ci95": null
+    },
+    "retrain minus random": {
+      "n": 1,
+      "mean": -13.28125,
+      "sem": null,
+      "ci95": null
+    },
+    "select minus random": {
+      "n": 1,
+      "mean": -17.1875,
+      "sem": null,
+      "ci95": null
+    },
+    "full minus random": {
+      "n": 1,
+      "mean": -21.875,
+      "sem": null,
+      "ci95": null
+    },
+    "select minus retrain": {
+      "n": 1,
+      "mean": -3.90625,
+      "sem": null,
+      "ci95": null
+    }
+  },
+  "asr_definition": "all held-out source images"
+}

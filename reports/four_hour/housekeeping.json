@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "updated_utc": "2026-11-13T03:22:44.623696+00:00",
+  "actions": [
+    "Moved the active schedule into docs/FOUR_HOUR_PLAN.md",
+    "Preserved original specification under docs/archive/",
+    "Made the four-hour pilot the default runner; original sweep requires --full-sweep",
+    "Rewrote setup instructions for the new scope",
+    "Archived stale preparation metadata and orphaned temporary files",
+    "Preserved all checkpoints, data, measured results, and development evidence"
+  ]
+}

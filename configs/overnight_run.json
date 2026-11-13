@@ -1,0 +1,20 @@
+{
+  "sampling_seed": 1536078799,
+  "pairs": [
+    {
+      "name": "A",
+      "source": 9,
+      "target": 5,
+      "seed": 368152593
+    },
+    {
+      "name": "B",
+      "source": 9,
+      "target": 7,
+      "seed": 1231470895
+    }
+  ],
+  "deadline_utc": "2026-11-13T17:00:00+00:00",
+  "report_reserve_minutes": 30,
+  "reference_shared": "results/full/shared/527ca756e205"
+}

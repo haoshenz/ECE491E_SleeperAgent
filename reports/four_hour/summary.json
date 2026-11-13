@@ -1,0 +1,18 @@
+{
+  "arms": {
+    "fixed": {
+      "n": 1,
+      "mean": 2.7000000700354576,
+      "sem": null,
+      "ci95": null
+    },
+    "full": {
+      "n": 1,
+      "mean": 99.9000072479248,
+      "sem": null,
+      "ci95": null
+    }
+  },
+  "paired_differences": {},
+  "asr_definition": "all held-out source images"
+}
