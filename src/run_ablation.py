@@ -6,6 +6,8 @@ from .data import load_data
 from .run_trial import run_trial
 
 ARMS = {
+    'htba': {'attack': 'htba', 'selection': 'random', 'retraining_factor': 0},
+    'clba': {'attack': 'clba', 'selection': 'random', 'retraining_factor': 0},
     'fixed': {'patch_location': 'fixed', 'selection': 'random', 'retraining_factor': 0},
     'random': {'patch_location': 'random', 'selection': 'random', 'retraining_factor': 0},
     'retrain': {'patch_location': 'random', 'selection': 'random', 'retraining_factor': 4},
@@ -17,7 +19,8 @@ ARMS = {
 def main():
     parser = argparse.ArgumentParser(description='Paired, resumable CIFAR-10 Table 10 ablation')
     parser.add_argument('--config', default='configs/cifar10_full.yaml')
-    parser.add_argument('--arms', nargs='+', choices=list(ARMS), default=list(ARMS))
+    parser.add_argument('--arms', nargs='+', choices=list(ARMS),
+                        default=['fixed', 'random', 'retrain', 'select', 'full'])
     parser.add_argument('--pairs', type=int, help='Use the first N predefined paired trials')
     args = parser.parse_args()
     configure()

@@ -47,5 +47,78 @@ class ResNet(nn.Module):
         return self.classifier(self.features(normalize(x)))
 
 
+class MobileBlock(nn.Module):
+    """Benchmark CIFAR inverted residual (ReLU, including projection shortcuts)."""
+    def __init__(self, cin, cout, expansion, stride):
+        super().__init__()
+        hidden = expansion * cin
+        self.body = nn.Sequential(
+            nn.Conv2d(cin, hidden, 1, bias=False), nn.BatchNorm2d(hidden), nn.ReLU(),
+            nn.Conv2d(hidden, hidden, 3, stride, 1, groups=hidden, bias=False),
+            nn.BatchNorm2d(hidden), nn.ReLU(),
+            nn.Conv2d(hidden, cout, 1, bias=False), nn.BatchNorm2d(cout))
+        self.stride = stride
+        self.skip = nn.Identity() if cin == cout else nn.Sequential(
+            nn.Conv2d(cin, cout, 1, bias=False), nn.BatchNorm2d(cout)) if stride == 1 else None
+
+    def forward(self, x):
+        out = self.body(x)
+        return out + self.skip(x) if self.stride == 1 else out
+
+
+class MobileNetV2(nn.Module):
+    """CIFAR topology from poisoning-benchmark/models/mobilenetv2.py.
+
+    No stochastic dropping (all benchmark defaults are zero). Inputs are raw pixels,
+    like the existing ResNet; normalization is performed exactly once in forward.
+    """
+    def __init__(self):
+        super().__init__()
+        layers = [nn.Conv2d(3, 32, 3, 1, 1, bias=False), nn.BatchNorm2d(32), nn.ReLU()]
+        cin = 32
+        for expansion, cout, count, stride in (
+                (1, 16, 1, 1), (6, 24, 2, 1), (6, 32, 3, 2),
+                (6, 64, 4, 2), (6, 96, 3, 1), (6, 160, 3, 2), (6, 320, 1, 1)):
+            for i in range(count):
+                layers.append(MobileBlock(cin, cout, expansion, stride if i == 0 else 1))
+                cin = cout
+        layers.extend([nn.Conv2d(320, 1280, 1, bias=False), nn.BatchNorm2d(1280),
+                       nn.ReLU(), nn.AvgPool2d(4), nn.Flatten()])
+        self.features = nn.Sequential(*layers)
+        self.classifier = nn.Linear(1280, 10)
+
+    def forward(self, x):
+        return self.classifier(self.features(normalize(x)))
+
+
+class VGG11(nn.Module):
+    """Benchmark CIFAR VGG11: batch norm, five pools, single 512->10 head."""
+    def __init__(self):
+        super().__init__()
+        layers, cin = [], 3
+        for cout in (64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'):
+            if cout == 'M':
+                layers.append(nn.MaxPool2d(2))
+            else:
+                layers.extend([nn.Conv2d(cin, cout, 3, padding=1),
+                               nn.BatchNorm2d(cout), nn.ReLU(inplace=False)])
+                cin = cout
+        self.features = nn.Sequential(*layers, nn.Flatten())
+        self.classifier = nn.Linear(512, 10)
+
+    def forward(self, x):
+        return self.classifier(self.features(normalize(x)))
+
+
+def penultimate(model, x):
+    return model.features(normalize(x))
+
+
 def make_model(cfg):
-    return ResNet(cfg['architecture'], cfg['width']).to(cfg['device'])
+    if cfg['architecture'] == 'mobilenetv2':
+        model = MobileNetV2()
+    elif cfg['architecture'] == 'vgg11':
+        model = VGG11()
+    else:
+        model = ResNet(cfg['architecture'], cfg['width'])
+    return model.to(cfg['device'])

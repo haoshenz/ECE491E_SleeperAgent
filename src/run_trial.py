@@ -44,6 +44,11 @@ def shared_directory(cfg):
 
 
 def run_trial(cfg, source, target, seed, arm='custom', data=None, reference_shared=None):
+    if cfg.get('attack') in ('htba', 'clba'):
+        from .table6 import run_cell
+        if reference_shared is not None:
+            raise ValueError('Table 6 baselines use their own protected shared checkpoints')
+        return run_cell(cfg, cfg['attack'], source, target, seed, data=data)
     assert source != target and source in cfg['classes'] and target in cfg['classes']
     cfg = copy.deepcopy(cfg)
     cfg.update(source=source, target=target, seed=seed)

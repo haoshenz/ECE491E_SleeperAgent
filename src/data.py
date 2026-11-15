@@ -45,7 +45,10 @@ def project(delta, clean, epsilon):
         delta.copy_((clean + delta).clamp(0, 1) - clean)
 
 
-def assert_integrity(clean, poisoned, labels, original_labels, indices, target, epsilon, patch):
+def assert_integrity(clean, poisoned, labels, original_labels, indices, target, epsilon, patch,
+                     *, allow_trigger=False, arm=None):
+    if allow_trigger and arm != 'clba':
+        raise ValueError('Only clba may allow a training trigger')
     assert torch.equal(labels, original_labels), 'Training labels changed'
     assert len(indices.unique()) == len(indices)
     assert bool((labels[indices] == target).all()), 'Poisons outside target class'
@@ -56,6 +59,12 @@ def assert_integrity(clean, poisoned, labels, original_labels, indices, target, 
     expected = torch.zeros_like(changed)
     expected[indices] = True
     assert torch.equal(changed, expected), 'Incorrect poison count or indices'
+    if allow_trigger:
+        # CLBA callers separately verify the stamped (clipped) patch, and also
+        # check pre-stamp PGD. The final image still obeys the same epsilon bound.
+        return {'max_delta': float(delta.abs().max()), 'changed_images': int(changed.sum()),
+                'labels_unchanged': True, 'trigger_absent': None,
+                'trigger_absence_check': 'skipped for clba only'}
     # Bernoulli trigger is binary; only binary windows can equal it exactly.
     # Prefilter every spatial window without allocating N*C*H*W*P*P.
     p = patch.shape[-1]

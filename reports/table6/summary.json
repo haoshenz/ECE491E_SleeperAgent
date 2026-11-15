@@ -1,0 +1,68 @@
+{
+  "caption": "one pair (airplane->automobile), one seed; not a statistical reproduction",
+  "source": 0,
+  "target": 1,
+  "seed": 17,
+  "completed_cells": 1,
+  "expected_cells": 9,
+  "rows": [
+    {
+      "attack": "htba",
+      "label": "Saha (HTBA)",
+      "cells": {
+        "resnet18": null,
+        "mobilenetv2": null,
+        "vgg11": null
+      },
+      "mean_asr": null,
+      "mean_clean_accuracy": null
+    },
+    {
+      "attack": "clba",
+      "label": "Turner (CLBA)",
+      "cells": {
+        "resnet18": null,
+        "mobilenetv2": null,
+        "vgg11": null
+      },
+      "mean_asr": null,
+      "mean_clean_accuracy": null
+    },
+    {
+      "attack": "full",
+      "label": "Sleeper Agent",
+      "cells": {
+        "resnet18": {
+          "clean_accuracy": 0.9221999645233154,
+          "source_accuracy": 0.9410000443458557,
+          "asr": 0.999000072479248,
+          "asr_clean_correct": 0.9989373087882996,
+          "source_test_count": 1000,
+          "source_clean_correct_count": 941,
+          "asr_definition": "all held-out source images; uniformly random patch location"
+        },
+        "mobilenetv2": null,
+        "vgg11": null
+      },
+      "mean_asr": null,
+      "mean_clean_accuracy": null
+    }
+  ],
+  "provenance": [
+    {
+      "attack": "full",
+      "architecture": "resnet18",
+      "directory": "results\\table6\\cells\\resnet18_full_32a58e044e4c",
+      "reused": true,
+      "reused_from": "results\\full\\0-1_s17_full_6e499e05ba36\\result.json",
+      "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
+    }
+  ],
+  "notes": [
+    "ASR uses all 1,000 source-class test images with uniformly random patch locations.",
+    "Turner uses the requested clean surrogate; the reference benchmark supplies an adversarially trained surrogate.",
+    "HTBA closest-feature assignment enforces a bijection; see docs/table6_baselines.md.",
+    "Turner training trigger is clipped; both pre-trigger and final perturbations are bounded.",
+    "Row average is across architectures, not independent pair/seed repetitions."
+  ]
+}

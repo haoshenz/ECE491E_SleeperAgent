@@ -1,0 +1,37 @@
+name: cifar10_full
+device: cuda
+data_root: data
+output: results/table6
+classes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+train_per_class: null
+test_per_class: null
+architecture: resnet18
+width: 64
+batch_size: 128
+craft_batch_size: 16
+epochs_surrogate: 40
+epochs_retrain: 40
+epochs_victim: 80
+lr: 0.1
+milestones: [14, 24, 35]
+weight_decay: 0.0004
+amp: true
+epsilon: 0.06274509803921569
+poison_count: 500
+patch_size: 8
+source_count: 512
+craft_steps: 250
+# Reference tau=.1, pbatch=128: .1*(128/512) = .025.
+# Reference Adam coordinates are normalized: scale each update by channel std
+# while still keeping delta and every constraint in raw pixel space.
+craft_lr: 0.025
+craft_lr_units: normalized
+retraining_factor: 4
+selection: gradient
+patch_location: random
+checkpoint_every: 5
+telemetry_count: 16
+controls: true
+baseline_min_accuracy: 0.915
+pairs: [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [1, 4], [3, 8], [5, 0]]
+seeds: [17, 29, 43, 61, 73, 89, 101, 127]
