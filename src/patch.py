@@ -16,6 +16,13 @@ def apply_patch(x, patch, location='random', generator=None):
     elif location == 'fixed':
         rows = torch.full((n,), h-p, device=x.device)
         cols = torch.full((n,), w-p, device=x.device)
+    elif (isinstance(location, (tuple, list)) and len(location) == 2
+          and all(isinstance(v, int) and not isinstance(v, bool) for v in location)):
+        row, col = location
+        if not (0 <= row <= h-p and 0 <= col <= w-p):
+            raise ValueError(f'Patch location {location} does not fit image {h}x{w}')
+        rows = torch.full((n,), row, device=x.device)
+        cols = torch.full((n,), col, device=x.device)
     else:
         raise ValueError(location)
     out = x.clone()

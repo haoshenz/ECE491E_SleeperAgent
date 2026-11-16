@@ -11,13 +11,14 @@ from .progress import report_progress
 
 
 @torch.no_grad()
-def evaluate(model, x, y, source, target, patch, batch_size=128, seed=0):
+def evaluate(model, x, y, source, target, patch, batch_size=128, seed=0, location='random'):
+    """Evaluate without training. location is random, fixed bottom-right, or (row,col)."""
     model.eval()
     predictions = torch.cat([model(b).argmax(1) for b in x.split(batch_size)])
     mask = y == source
     assert bool(mask.any()), 'No held-out source examples'
     generator = torch.Generator(device=x.device).manual_seed(seed)
-    patched = torch.cat([model(apply_patch(b, patch, 'random', generator)).argmax(1)
+    patched = torch.cat([model(apply_patch(b, patch, location, generator)).argmax(1)
                          for b in x[mask].split(batch_size)])
     correct = predictions[mask] == source
     return {'clean_accuracy': float((predictions == y).float().mean()),
@@ -25,7 +26,9 @@ def evaluate(model, x, y, source, target, patch, batch_size=128, seed=0):
             'asr': float((patched == target).float().mean()),
             'asr_clean_correct': float((patched[correct] == target).float().mean()) if bool(correct.any()) else None,
             'source_test_count': int(mask.sum()), 'source_clean_correct_count': int(correct.sum()),
-            'asr_definition': 'all held-out source images; uniformly random patch location'}
+            'asr_definition': ('all held-out source images; uniformly random patch location'
+                               if location == 'random' else
+                               f'all held-out source images; fixed patch location {location}')}
 
 
 def alignment_telemetry(model, x, y, indices, source_x, target, patch, cfg):

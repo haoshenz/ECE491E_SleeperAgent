@@ -1,0 +1,459 @@
+{
+  "caption": "one pair (airplane->automobile), one seed; not a statistical reproduction",
+  "evaluation_only": true,
+  "source": 0,
+  "target": 1,
+  "seed": 17,
+  "evaluation_seed": 717,
+  "test_images": 10000,
+  "source_test_images": 1000,
+  "all_random_scores_match_original": true,
+  "protected_input_sha256": {
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\progress.md": "b58048e4f1edb3493881c2e5fc2b00796eb62943496c160dfb39f6e1f3767abf",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\main_study\\controls.json": "257742fb3a6692b29dd757d3defad3ace30c6aea377300617bb7c65ed7c0d221",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\main_study\\figures\\01_reproduction_vs_paper.png": "f3f3be74d8e17e61b7d4f55cd40e6ec6c2fc4b90190bb9ab76bdd17fc46c387c",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\main_study\\figures\\02_pairwise_asr.png": "9b8d4d10296fa0113d9f98c8a0dc3209e9f284468c0125057ed10e3af34b8775",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\main_study\\figures\\03_controls_and_accuracy.png": "e06b02dadcacdd0662982d7c7b5576dbe9498d41a78d781689b18a5a275c9af4",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\main_study\\figures\\04_poison_examples.png": "740bf04ac8c2be54b8adda0720a61457ed3d5ea54c76be460c320577dd43b084",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\main_study\\figures\\05_gradient_alignment.png": "c3eb91888864b3fd2532af7f1ab1cbddc471d3da38aa8b74da006cdcedd2e66b",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\main_study\\measurements.json": "db5310e2c4f10cc259c10e4908c3169e6ad0a0fbe43be1f89552da923da03cb3",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\main_study\\presentation_data.json": "87ce7acc425cbb121d783733197757ce79c93c4d983efc8fda505890b4e27f8e",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\main_study\\summary.json": "103f5fb8c7b8a7ce84c5f3d2041f096e72f8854ddcebbc7a67e545de9e4a04c2",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\reports\\table6\\summary.json": "c20d86f84309716bf8011781d5f7ebd8dfd3330992ee3157391bd82238468795",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\full\\0-1_s17_full_6e499e05ba36\\poisons.pt": "955e93fd1f23b6117c0f8eb0d099d3c6c43ad53c9da65c79721b9d5c47caecfb",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\full\\0-1_s17_full_6e499e05ba36\\result.json": "b26360b20ba1b8aa974d95269e57ead16b27634454a21d268e26fbfa23ac4dca",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\full\\0-1_s17_full_6e499e05ba36\\victim\\train.pt": "51803d2bd09b83759dd3b11a4e55e287a8c7376e07cd6390ff5b9a4e53656008",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_clba_fb748a642d5a\\poisons.pt": "d73e3cc87d4f1a28ca2c635d3810f1ddc941e226b01c75b7e2e328dee17ab8f7",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_clba_fb748a642d5a\\result.json": "799dc57c74cd24b2e145d289c0c8803c7ae0dd9b73ec37bc67bcc48ceff3f731",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_clba_fb748a642d5a\\victim\\train.pt": "5d4c23ae4d4f8f13151a94f5496e98f198f9711e235963e0161b5775002a28d5",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_full_f19d32969f3b\\poisons.pt": "47da2dd287de1cd080d789950d41e23168d2d4c762bce20309d0dccd03ff8d65",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_full_f19d32969f3b\\result.json": "493b7183c57647ec36ec01ad6817384ba61d51b25380eb21edc9e6468a298680",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_full_f19d32969f3b\\victim\\train.pt": "45ec25758bbc5a8df5af9d23be0d4d4d4e881efb12aaebff57a3a7739475eb61",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_htba_cb13e83333ae\\poisons.pt": "62863a4c36e6c65592680f15a22832aef0dcf703d90ed51096bb5f3322652338",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_htba_cb13e83333ae\\result.json": "90336844d95a5cf02451480899fa7bb797ea06daf302de84cfc6ef2ac5fc74b9",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_htba_cb13e83333ae\\victim\\train.pt": "4e4fec438f94a03af5d8e1194c36b26a0c5cc0a172544e853bd7ea0e0a65b765",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_clba_8fab5343a7d9\\poisons.pt": "f61dc3b146bb902fabc6722dac6aff48d3ad202630ef2188f009c77e91189c21",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_clba_8fab5343a7d9\\result.json": "eb7fd5faa6b2d0ba2888970ec923fa6e70e4b6c8baa138f8f82a441363bdfbcd",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_clba_8fab5343a7d9\\victim\\train.pt": "e4c400462e6cbe78c2e53d5c7f116d8c15da5ba9d01bc4b0a94c120fe9036638",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_full_32a58e044e4c\\result.json": "c46dc5d57f4157190c4f66d1ae6fcf278ba9d3dbcaee9b4ff4a8b2e8680090f8",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_htba_fd878e6a67dc\\poisons.pt": "434a3eec86a08cefbca0e4ac296ebb71c1fddbb31143ed49a9fd4ddc5acc4f98",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_htba_fd878e6a67dc\\result.json": "b64d7456ca60355724bb2a111ee93c90ecf5d20d966829754ace1616c2520bd8",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_htba_fd878e6a67dc\\victim\\train.pt": "3eea11c96ff30ae55ffe723d5b09a0c9dff4c0277cea23f4adab5efcc18698e6",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_clba_709fce4e6681\\poisons.pt": "4e756f991c696d515762c5e4db2e149857dc08d9cf066bb2b68b4c390e8897c3",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_clba_709fce4e6681\\result.json": "386f431750af9c1c338a3cab9b807d5bac23e957afaf5c167ee60a26e1ec1b70",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_clba_709fce4e6681\\victim\\train.pt": "1faba64b712641563b0ef600aed725bf76735d25d75d323a918a91ef2f3aae02",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_full_eaad84c4b7fa\\poisons.pt": "67734ff72b8b7e6dee3cb180af235a0e9a6fda2336e62a6fa3a681b6d9f14b0d",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_full_eaad84c4b7fa\\result.json": "344dd98ae64e693cd77fb6b2163cba26b21120be76dfd89c95a34d479102d715",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_full_eaad84c4b7fa\\victim\\train.pt": "4c6c0c257f8289ff7de6ba75beb78c23c644aedeb9f5a494e369edb5c25e3aec",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_htba_669da0b9178e\\poisons.pt": "a8816d44fc4c731b30e7dc6f80f78176f0835e8a197899510eabae2b5d64fed4",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_htba_669da0b9178e\\result.json": "61016c682da304a08ccacc981bb0f67e87befc67da51b047b02068e05a540c37",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_htba_669da0b9178e\\victim\\train.pt": "f8f48023054dfd381e4999761cc789df00f1a50369e019483259e8379b5b37e1",
+    "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\run.log": "732f6afa68cf3895c5addbe405c9e9a87405e0e4f26a43b948fcb2fb1b4e9c4a"
+  },
+  "cells": [
+    {
+      "attack": "htba",
+      "architecture": "resnet18",
+      "source": 0,
+      "target": 1,
+      "seed": 17,
+      "evaluation_seed": 717,
+      "batch_size": 128,
+      "checkpoint": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_htba_fd878e6a67dc\\victim\\train.pt",
+      "result_json": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_htba_fd878e6a67dc\\result.json",
+      "reused": false,
+      "fixed_position_row_col": [
+        19,
+        19
+      ],
+      "original_random_asr": 0.02500000037252903,
+      "random_matches_original": true,
+      "random": {
+        "clean_accuracy": 0.9250999689102173,
+        "source_accuracy": 0.9300000667572021,
+        "asr": 0.02500000037252903,
+        "asr_clean_correct": 0.017204301431775093,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 930,
+        "asr_definition": "all held-out source images; uniformly random patch location"
+      },
+      "fixed": {
+        "clean_accuracy": 0.9250999689102173,
+        "source_accuracy": 0.9300000667572021,
+        "asr": 0.049000002443790436,
+        "asr_clean_correct": 0.040860217064619064,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 930,
+        "asr_definition": "all held-out source images; fixed patch location (19, 19)"
+      }
+    },
+    {
+      "attack": "htba",
+      "architecture": "mobilenetv2",
+      "source": 0,
+      "target": 1,
+      "seed": 17,
+      "evaluation_seed": 717,
+      "batch_size": 128,
+      "checkpoint": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_htba_cb13e83333ae\\victim\\train.pt",
+      "result_json": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_htba_cb13e83333ae\\result.json",
+      "reused": false,
+      "fixed_position_row_col": [
+        19,
+        19
+      ],
+      "original_random_asr": 0.024000000208616257,
+      "random_matches_original": true,
+      "random": {
+        "clean_accuracy": 0.887999951839447,
+        "source_accuracy": 0.909000039100647,
+        "asr": 0.024000000208616257,
+        "asr_clean_correct": 0.011001099832355976,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 909,
+        "asr_definition": "all held-out source images; uniformly random patch location"
+      },
+      "fixed": {
+        "clean_accuracy": 0.887999951839447,
+        "source_accuracy": 0.909000039100647,
+        "asr": 0.027000000700354576,
+        "asr_clean_correct": 0.013201320543885231,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 909,
+        "asr_definition": "all held-out source images; fixed patch location (19, 19)"
+      }
+    },
+    {
+      "attack": "htba",
+      "architecture": "vgg11",
+      "source": 0,
+      "target": 1,
+      "seed": 17,
+      "evaluation_seed": 717,
+      "batch_size": 128,
+      "checkpoint": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_htba_669da0b9178e\\victim\\train.pt",
+      "result_json": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_htba_669da0b9178e\\result.json",
+      "reused": false,
+      "fixed_position_row_col": [
+        19,
+        19
+      ],
+      "original_random_asr": 0.1120000034570694,
+      "random_matches_original": true,
+      "random": {
+        "clean_accuracy": 0.8937000036239624,
+        "source_accuracy": 0.9130000472068787,
+        "asr": 0.1120000034570694,
+        "asr_clean_correct": 0.09090909361839294,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 913,
+        "asr_definition": "all held-out source images; uniformly random patch location"
+      },
+      "fixed": {
+        "clean_accuracy": 0.8937000036239624,
+        "source_accuracy": 0.9130000472068787,
+        "asr": 0.10600000619888306,
+        "asr_clean_correct": 0.0821467712521553,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 913,
+        "asr_definition": "all held-out source images; fixed patch location (19, 19)"
+      }
+    },
+    {
+      "attack": "clba",
+      "architecture": "resnet18",
+      "source": 0,
+      "target": 1,
+      "seed": 17,
+      "evaluation_seed": 717,
+      "batch_size": 128,
+      "checkpoint": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_clba_8fab5343a7d9\\victim\\train.pt",
+      "result_json": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_clba_8fab5343a7d9\\result.json",
+      "reused": false,
+      "fixed_position_row_col": [
+        24,
+        24
+      ],
+      "original_random_asr": 0.009000000543892384,
+      "random_matches_original": true,
+      "random": {
+        "clean_accuracy": 0.9235999584197998,
+        "source_accuracy": 0.9450000524520874,
+        "asr": 0.009000000543892384,
+        "asr_clean_correct": 0.002116402145475149,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 945,
+        "asr_definition": "all held-out source images; uniformly random patch location"
+      },
+      "fixed": {
+        "clean_accuracy": 0.9235999584197998,
+        "source_accuracy": 0.9450000524520874,
+        "asr": 0.009000000543892384,
+        "asr_clean_correct": 0.0031746032182127237,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 945,
+        "asr_definition": "all held-out source images; fixed patch location (24, 24)"
+      }
+    },
+    {
+      "attack": "clba",
+      "architecture": "mobilenetv2",
+      "source": 0,
+      "target": 1,
+      "seed": 17,
+      "evaluation_seed": 717,
+      "batch_size": 128,
+      "checkpoint": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_clba_fb748a642d5a\\victim\\train.pt",
+      "result_json": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_clba_fb748a642d5a\\result.json",
+      "reused": false,
+      "fixed_position_row_col": [
+        24,
+        24
+      ],
+      "original_random_asr": 0.03700000047683716,
+      "random_matches_original": true,
+      "random": {
+        "clean_accuracy": 0.8878999948501587,
+        "source_accuracy": 0.9040000438690186,
+        "asr": 0.03700000047683716,
+        "asr_clean_correct": 0.027654867619276047,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 904,
+        "asr_definition": "all held-out source images; uniformly random patch location"
+      },
+      "fixed": {
+        "clean_accuracy": 0.8878999948501587,
+        "source_accuracy": 0.9040000438690186,
+        "asr": 0.01100000087171793,
+        "asr_clean_correct": 0.0022123893722891808,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 904,
+        "asr_definition": "all held-out source images; fixed patch location (24, 24)"
+      }
+    },
+    {
+      "attack": "clba",
+      "architecture": "vgg11",
+      "source": 0,
+      "target": 1,
+      "seed": 17,
+      "evaluation_seed": 717,
+      "batch_size": 128,
+      "checkpoint": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_clba_709fce4e6681\\victim\\train.pt",
+      "result_json": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_clba_709fce4e6681\\result.json",
+      "reused": false,
+      "fixed_position_row_col": [
+        24,
+        24
+      ],
+      "original_random_asr": 0.05000000074505806,
+      "random_matches_original": true,
+      "random": {
+        "clean_accuracy": 0.8895999789237976,
+        "source_accuracy": 0.9110000729560852,
+        "asr": 0.05000000074505806,
+        "asr_clean_correct": 0.03512623533606529,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 911,
+        "asr_definition": "all held-out source images; uniformly random patch location"
+      },
+      "fixed": {
+        "clean_accuracy": 0.8895999789237976,
+        "source_accuracy": 0.9110000729560852,
+        "asr": 0.06599999964237213,
+        "asr_clean_correct": 0.053787048906087875,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 911,
+        "asr_definition": "all held-out source images; fixed patch location (24, 24)"
+      }
+    },
+    {
+      "attack": "full",
+      "architecture": "resnet18",
+      "source": 0,
+      "target": 1,
+      "seed": 17,
+      "evaluation_seed": 717,
+      "batch_size": 128,
+      "checkpoint": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\full\\0-1_s17_full_6e499e05ba36\\victim\\train.pt",
+      "result_json": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\resnet18_full_32a58e044e4c\\result.json",
+      "reused": true,
+      "fixed_position_row_col": [
+        24,
+        24
+      ],
+      "original_random_asr": 0.999000072479248,
+      "random_matches_original": true,
+      "random": {
+        "clean_accuracy": 0.9221999645233154,
+        "source_accuracy": 0.9410000443458557,
+        "asr": 0.999000072479248,
+        "asr_clean_correct": 0.9989373087882996,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 941,
+        "asr_definition": "all held-out source images; uniformly random patch location"
+      },
+      "fixed": {
+        "clean_accuracy": 0.9221999645233154,
+        "source_accuracy": 0.9410000443458557,
+        "asr": 0.9650000333786011,
+        "asr_clean_correct": 0.9649308919906616,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 941,
+        "asr_definition": "all held-out source images; fixed patch location (24, 24)"
+      }
+    },
+    {
+      "attack": "full",
+      "architecture": "mobilenetv2",
+      "source": 0,
+      "target": 1,
+      "seed": 17,
+      "evaluation_seed": 717,
+      "batch_size": 128,
+      "checkpoint": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_full_f19d32969f3b\\victim\\train.pt",
+      "result_json": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\mobilenetv2_full_f19d32969f3b\\result.json",
+      "reused": false,
+      "fixed_position_row_col": [
+        24,
+        24
+      ],
+      "original_random_asr": 0.27900001406669617,
+      "random_matches_original": true,
+      "random": {
+        "clean_accuracy": 0.8853999972343445,
+        "source_accuracy": 0.9120000600814819,
+        "asr": 0.27900001406669617,
+        "asr_clean_correct": 0.27521929144859314,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 912,
+        "asr_definition": "all held-out source images; uniformly random patch location"
+      },
+      "fixed": {
+        "clean_accuracy": 0.8853999972343445,
+        "source_accuracy": 0.9120000600814819,
+        "asr": 0.04000000283122063,
+        "asr_clean_correct": 0.029605263844132423,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 912,
+        "asr_definition": "all held-out source images; fixed patch location (24, 24)"
+      }
+    },
+    {
+      "attack": "full",
+      "architecture": "vgg11",
+      "source": 0,
+      "target": 1,
+      "seed": 17,
+      "evaluation_seed": 717,
+      "batch_size": 128,
+      "checkpoint": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_full_eaad84c4b7fa\\victim\\train.pt",
+      "result_json": "C:\\Users\\Haoshen\\Documents\\GitHub\\ECE491E_SleeperAgent\\results\\table6\\cells\\vgg11_full_eaad84c4b7fa\\result.json",
+      "reused": false,
+      "fixed_position_row_col": [
+        24,
+        24
+      ],
+      "original_random_asr": 0.984000027179718,
+      "random_matches_original": true,
+      "random": {
+        "clean_accuracy": 0.8898999691009521,
+        "source_accuracy": 0.9260000586509705,
+        "asr": 0.984000027179718,
+        "asr_clean_correct": 0.9870409965515137,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 926,
+        "asr_definition": "all held-out source images; uniformly random patch location"
+      },
+      "fixed": {
+        "clean_accuracy": 0.8898999691009521,
+        "source_accuracy": 0.9260000586509705,
+        "asr": 0.39100003242492676,
+        "asr_clean_correct": 0.3866090476512909,
+        "source_test_count": 1000,
+        "source_clean_correct_count": 926,
+        "asr_definition": "all held-out source images; fixed patch location (24, 24)"
+      }
+    }
+  ],
+  "tables": {
+    "native": [
+      {
+        "attack": "htba",
+        "label": "Saha (HTBA)",
+        "test_placement": "fixed",
+        "asr": {
+          "resnet18": 0.049000002443790436,
+          "mobilenetv2": 0.027000000700354576,
+          "vgg11": 0.10600000619888306
+        },
+        "mean_asr": 0.060666669781009354
+      },
+      {
+        "attack": "clba",
+        "label": "Turner (CLBA)",
+        "test_placement": "fixed",
+        "asr": {
+          "resnet18": 0.009000000543892384,
+          "mobilenetv2": 0.01100000087171793,
+          "vgg11": 0.06599999964237213
+        },
+        "mean_asr": 0.02866666701932748
+      },
+      {
+        "attack": "full",
+        "label": "Sleeper Agent",
+        "test_placement": "random",
+        "asr": {
+          "resnet18": 0.999000072479248,
+          "mobilenetv2": 0.27900001406669617,
+          "vgg11": 0.984000027179718
+        },
+        "mean_asr": 0.7540000379085541
+      }
+    ],
+    "random": [
+      {
+        "attack": "htba",
+        "label": "Saha (HTBA)",
+        "test_placement": "random",
+        "asr": {
+          "resnet18": 0.02500000037252903,
+          "mobilenetv2": 0.024000000208616257,
+          "vgg11": 0.1120000034570694
+        },
+        "mean_asr": 0.05366666801273823
+      },
+      {
+        "attack": "clba",
+        "label": "Turner (CLBA)",
+        "test_placement": "random",
+        "asr": {
+          "resnet18": 0.009000000543892384,
+          "mobilenetv2": 0.03700000047683716,
+          "vgg11": 0.05000000074505806
+        },
+        "mean_asr": 0.03200000058859587
+      },
+      {
+        "attack": "full",
+        "label": "Sleeper Agent",
+        "test_placement": "random",
+        "asr": {
+          "resnet18": 0.999000072479248,
+          "mobilenetv2": 0.27900001406669617,
+          "vgg11": 0.984000027179718
+        },
+        "mean_asr": 0.7540000379085541
+      }
+    ]
+  },
+  "elapsed_seconds": 24.800800500030164,
+  "completed_hawaii": "2026-11-15T17:27:16.538618-10:00",
+  "notes": [
+    "No retraining; original cell result.json files are not modified.",
+    "CLBA used a clean, not adversarially trained, surrogate.",
+    "Native means HTBA/CLBA fixed and Sleeper Agent random for this re-scoring.",
+    "Other benchmark differences remain documented in docs/table6_baselines.md."
+  ]
+}
