@@ -8,52 +8,32 @@ The project includes an earlier three-pair ResNet-18 ablation study and an attac
 
 ## Setup
 
-The experiments used Python 3.12, PyTorch with CUDA 12.8, and an RTX 5070 Ti Laptop GPU with 12 GB VRAM and 32 GB system RAM. From the repository root:
+Requires Python 3.12, `uv`, and an NVIDIA GPU with CUDA 12.8 support. Run from the repository root:
 
 ```powershell
 uv venv --python 3.12 .venv
 uv pip install --python .venv/Scripts/python.exe -r requirements-lock.txt
-
-.venv/Scripts/python.exe -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 .venv/Scripts/python.exe scripts/download_data.py
-
-.venv/Scripts/python.exe -m pytest -q
 ```
-
-`requirements-lock.txt` records the tested dependency versions. The dataset and local checkpoints are stored in `data/` and `results/`, which are excluded from Git. Forty correctness tests passed after the re-scoring step was added.
 
 ## Run
 
-The commands in this first block train models. The smoke run checks the pipeline with smaller settings; its scores are not used in the results.
-
 ```powershell
-# Small development run
-.venv/Scripts/python.exe -m src.run_ablation --config configs/smoke.yaml --arms fixed random select full
-
-# The four evaluated ablation configurations on airplane → automobile
-.venv/Scripts/python.exe -m src.run_ablation --config configs/cifar10_full.yaml --pairs 1 --arms fixed random select full
-
 # Three-pair ResNet-18 study
 .venv/Scripts/python.exe -u scripts/run_study.py
 
-# Check and run the nine-cell architecture comparison
+# Three-model attack comparison
 .venv/Scripts/python.exe scripts/table6_preflight.py
 .venv/Scripts/python.exe scripts/run_table6.py --log-file results/table6/run.log
-```
 
-The comparison runner requires passing tests, nine smoke cells, and a measured estimate of at most 22 hours before launching. It saves checkpoints, skips completed cells, and writes status to [progress.md](progress.md). The November 14–15 run finished in about 14.6 hours of active runner time, including CPU work and checkpoint writes. It reused the completed ResNet-18 Sleeper Agent result.
-
-These commands use saved results and do not train models:
-
-```powershell
-# Evaluate the nine saved victims at fixed and random trigger positions
+# Re-score saved models without training
 .venv/Scripts/python.exe scripts/rescore_table6.py
 
-# Rebuild this README and the architecture-comparison figure
+# Rebuild the README and comparison figure
 .venv/Scripts/python.exe -m analysis.build_readme --table6-only
 ```
 
-Re-scoring requires the local checkpoints, including the original reused ResNet-18 checkpoint. Rebuilding the README uses the saved report files. The older `--skip-examples` command also regenerates the original ablation figures; `--table6-only` leaves those files unchanged.
+The comparison runner resumes from checkpoints and updates [progress.md](progress.md). Re-scoring requires the saved local checkpoints.
 
 ## Results
 
