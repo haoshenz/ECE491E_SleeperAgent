@@ -1,0 +1,14 @@
+{
+  "description": "Published reference values, not measurements from this project. Supplied in the README outline and checked against the paper's Table 6.",
+  "source": "https://arxiv.org/html/2106.08970v3#S4.T6",
+  "table": "Table 6",
+  "units": "percent",
+  "dataset": "CIFAR-10",
+  "epsilon": "16/255",
+  "poison_budget_percent": 1,
+  "rows": [
+    {"attack": "htba", "asr": {"resnet18": 3.50, "mobilenetv2": 3.76, "vgg11": 5.02}, "average": 4.09},
+    {"attack": "clba", "asr": {"resnet18": 2.78, "mobilenetv2": 3.50, "vgg11": 4.70}, "average": 3.66},
+    {"attack": "full", "asr": {"resnet18": 78.84, "mobilenetv2": 75.96, "vgg11": 86.60}, "average": 80.47}
+  ]
+}

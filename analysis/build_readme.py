@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 import json
 import textwrap
+import re
 from string import Template
 import numpy as np
 import matplotlib
@@ -22,8 +23,10 @@ PAIRS = ((0, 1), (9, 5), (4, 6))
 PAIR_LABELS = ('Airplane → automobile', 'Truck → dog', 'Deer → frog')
 COLORS = ('#7b3294', '#2166ac', '#1b7837')
 ARM_COLORS = ('#7b3294', '#2166ac', '#d95f02', '#1b7837')
-PAPER = np.array([19.25, 33.95, 63.49, 85.27])
-PAPER_SE = np.array([3.01, 4.57, 6.13, 5.90])
+_ABLATION_REFERENCE = json.loads((OUT/'presentation_data.json').read_text(encoding='utf-8'))
+PAPER = np.array(_ABLATION_REFERENCE['paper_means_percent'])
+# Keep the archived JSON key; its name does not establish the paper's uncertainty type.
+PAPER_SE = np.array(_ABLATION_REFERENCE['paper_se_percent'])
 TABLE6 = ROOT/'reports/table6'
 ARCHITECTURES = ('resnet18', 'mobilenetv2', 'vgg11')
 ARCH_LABELS = ('ResNet-18', 'MobileNetV2', 'VGG11')
@@ -62,6 +65,35 @@ def clean_table(data):
         values = {arch: cells[row['attack'], arch]['random']['clean_accuracy'] for arch in ARCHITECTURES}
         rows.append({'label': row['label'], 'asr': values, 'mean_asr': np.mean(list(values.values()))})
     return attack_table(rows)
+
+
+def paper_comparison_table(data):
+    reference = json.loads((TABLE6/'paper_reference.json').read_text(encoding='utf-8'))
+    paper = {r['attack']: r for r in reference['rows']}
+    lines = ['| Attack | ResNet-18: ours / paper | MobileNetV2: ours / paper | VGG11: ours / paper | Average: ours / paper |',
+             '|---|---:|---:|---:|---:|']
+    for row in data['tables']['native']:
+        published = paper[row['attack']]
+        values = [f"{100*row['asr'][arch]:.2f}% / {published['asr'][arch]:.2f}%" for arch in ARCHITECTURES]
+        values.append(f"{100*row['mean_asr']:.2f}% / {published['average']:.2f}%")
+        lines.append('| '+' | '.join([row['label'], *values])+' |')
+    fixed = {r['architecture']: r['fixed']['asr']*100 for r in data['cells'] if r['attack'] == 'full'}
+    values = [f'{fixed[arch]:.2f}% / —' for arch in ARCHITECTURES]
+    values.append(f'{np.mean(list(fixed.values())):.2f}% / —')
+    lines.append('| '+' | '.join(['Sleeper Agent, trigger fixed at (24,24)', *values])+' |')
+    return '\n'.join(lines)
+
+
+def main_body_word_count(text):
+    """Count rendered words before Appendix, excluding HTML details and code."""
+    main = text.split('## Appendix', 1)[0]
+    main = re.sub(r'<details\b[^>]*>.*?</details>', '', main, flags=re.S)
+    main = re.sub(r'```.*?```', '', main, flags=re.S)
+    main = re.sub(r'`[^`]*`', '', main)
+    main = re.sub(r'!\[[^\]]*\]\([^)]*\)', '', main)
+    main = re.sub(r'\[([^\]]*)\]\([^)]*\)', r'\1', main)
+    main = re.sub(r'<[^>]+>', ' ', main)
+    return len(re.findall(r"\b[\w]+(?:[’'→.-][\w]+)*\b", main))
 
 
 def make_table6_chart(data):
@@ -134,7 +166,7 @@ def make_charts(rows, asr, acc, clean, noise):
     x = np.arange(4)
     fig, ax = plt.subplots(figsize=(9.5, 5.0), layout='constrained')
     for values, errors, offset, color, label in [
-        (PAPER, PAPER_SE, -.19, '#a6bddb', 'Paper Table 10 (reported mean ± SE)'),
+        (PAPER, PAPER_SE, -.19, '#a6bddb', 'Paper Table 10 (mean ± as reported)'),
         (asr.mean(0), sem(asr), .19, '#e08214', 'Our runs (mean ± SE, n = 3 pairs)')]:
         bars = ax.bar(x+offset, values, .36, color=color, yerr=errors, capsize=4, label=label)
         for b, v, error in zip(bars, values, errors):
@@ -247,13 +279,11 @@ def make_examples(rows):
 
 def build_readme(rows, asr, acc, clean, noise, write_presentation_data=True):
     mean = asr.mean(0); error = sem(asr)
-    table = ['| Configuration | Patch during crafting | Selection | Retrains | Paper ASR ± SE | Our ASR ± SE | n | Clean accuracy |',
-             '|---|---|---|---:|---:|---:|---:|---:|']
+    table = ['| Configuration | Paper ASR (± as reported) | Our ASR ± SE | Clean acc. |',
+             '|---|---:|---:|---:|']
     for i, label in enumerate(('Fixed patch', 'Random patch', 'Random + selection', 'Full attack')):
-        table.append(f'| {label} | {"Bottom-right" if i == 0 else "Random"} | '
-                     f'{"Largest full-gradient norms" if i >= 2 else "Random target images"} | '
-                     f'{4 if i == 3 else 0} | {PAPER[i]:.2f} ± {PAPER_SE[i]:.2f}% | '
-                     f'{mean[i]:.2f} ± {error[i]:.2f}% | 3 | {acc.mean(0)[i]:.2f}% |')
+        table.append(f'| {label} | {PAPER[i]:.2f} ± {PAPER_SE[i]:.2f}% | '
+                     f'{mean[i]:.2f} ± {error[i]:.2f}% | {acc.mean(0)[i]:.2f}% |')
     pairs_table = ['| Source → target | Seed | Fixed | Random | Random + selection | Full |', '|---|---:|---:|---:|---:|---:|']
     controls_table = ['| Source → target | Clean model + patch | Random-noise control | Selected-noise control | Full attack |',
                       '|---|---:|---:|---:|---:|']
@@ -267,6 +297,8 @@ def build_readme(rows, asr, acc, clean, noise, write_presentation_data=True):
     fixed_cells = {r['architecture']: r for r in comparison['cells'] if r['attack'] == 'full'}
     fixed_note = ', '.join(f"{100*fixed_cells[arch]['fixed']['asr']:.2f}% on {label}"
                            for arch, label in zip(ARCHITECTURES, ARCH_LABELS))
+    baseline = json.loads((OUT/'controls.json').read_text(encoding='utf-8'))[0]['clean_model']['clean_accuracy']*100
+    victim_minutes = np.mean([r['victim_seconds']/60 for row in rows for r in row])
     template = Template((ROOT/'analysis/README.template.md').read_text(encoding='utf-8'))
     text = template.substitute(
         full_asr=f'{mean[3]:.2f}', full_clean=f'{acc.mean(0)[3]:.2f}',
@@ -274,7 +306,9 @@ def build_readme(rows, asr, acc, clean, noise, write_presentation_data=True):
         controls_table='\n'.join(controls_table),
         native_table=attack_table(comparison['tables']['native']),
         random_table=attack_table(comparison['tables']['random']),
+        paper_comparison_table=paper_comparison_table(comparison),
         architecture_clean_table=clean_table(comparison),
+        clean_baseline=f'{baseline:.2f}', victim_minutes=f'{victim_minutes:.0f}',
         sleeper_fixed_note=fixed_note, rescore_seconds=f"{comparison['elapsed_seconds']:.1f}")
     (ROOT/'README.md').write_text(text, encoding='utf-8')
     data = {'arms': list(ARMS), 'pairs': [list(p) for p in PAIRS], 'pair_labels': list(PAIR_LABELS),
@@ -285,24 +319,30 @@ def build_readme(rows, asr, acc, clean, noise, write_presentation_data=True):
             'full_minus_fixed': {'n': 3, 'mean_pp': float(difference.mean()), 'ci95_pp': [float(lo), float(hi)]}}
     if write_presentation_data:
         (OUT/'presentation_data.json').write_text(json.dumps(data, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
+    return text
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--skip-examples', action='store_true')
-    p.add_argument('--table6-only', action='store_true',
+    modes = p.add_mutually_exclusive_group()
+    modes.add_argument('--table6-only', action='store_true',
                    help='Update README and the Table 6 figure; preserve all original main-study report files.')
+    modes.add_argument('--readme-only', action='store_true', help='Regenerate README without rewriting figures or reports.')
     args = p.parse_args()
     rows, asr, acc, clean, noise = load()
-    if not args.table6_only:
+    if not args.table6_only and not args.readme_only:
         make_charts(rows, asr, acc, clean, noise)
         if not args.skip_examples:
             make_examples(rows)
         elif not (FIG/'04_poison_examples.png').exists():
             raise FileNotFoundError('Image examples are not yet generated; run once without --skip-examples.')
-    make_table6_chart(load_table6())
-    build_readme(rows, asr, acc, clean, noise, write_presentation_data=not args.table6_only)
-    print(f'Rebuilt README from {len(rows)*4} ablation trials and 9 comparison cells; updated Table 6 figure.')
+    if not args.readme_only:
+        make_table6_chart(load_table6())
+    text = build_readme(rows, asr, acc, clean, noise,
+                        write_presentation_data=not (args.table6_only or args.readme_only))
+    print(f'Rebuilt README from {len(rows)*4} ablation trials and 9 comparison cells. '
+          f'Main body: {main_body_word_count(text)} words (excluding Appendix and code).')
 
 
 if __name__ == '__main__':
