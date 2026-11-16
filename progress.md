@@ -1,28 +1,26 @@
 # Table 6 progress
 
-Last updated: 2026-11-15 00:26:04 HST (updates every 15 s)
-Status: RUNNING
+Last updated: 2026-11-15 14:45:51 HST (updates every 15 s)
+Status: DONE
 
 ## Right now
 
-Cell 2 of 9: Saha (HTBA) on resnet18
-Step: Victim training and attack evaluation, 2 of 80
-This cell: 33% done, about 37 min left
+All scheduled work finished.
 
 ## Overall
 
-Done: 1 of 9 cells
-GPU time used: 0.28 h of 24 h budget
-Estimated time left: about 18.1 h
+Done: 9 of 9 cells
+GPU time used: 14.60 h of 24 h budget
+Estimated time left: about 0.0 h
 Time budget conservatively counts active runner wall time, including CPU work and checkpoint writes.
 
 ## Table so far (attack success rate)
 
 | Attack | ResNet-18 | MobileNetV2 | VGG11 |
 |---|---:|---:|---:|
-| Saha (HTBA) | running | waiting | waiting |
-| Turner (CLBA) | waiting | waiting | waiting |
-| Sleeper Agent | 99.90% (reused) | waiting | waiting |
+| Saha (HTBA) | 2.50% | 2.40% | 11.20% |
+| Turner (CLBA) | 0.90% | 3.70% | 5.00% |
+| Sleeper Agent | 99.90% (reused) | 27.90% | 98.40% |
 
 ## Problems
 

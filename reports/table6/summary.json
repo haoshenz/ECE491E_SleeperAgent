@@ -3,30 +3,78 @@
   "source": 0,
   "target": 1,
   "seed": 17,
-  "completed_cells": 1,
+  "completed_cells": 9,
   "expected_cells": 9,
   "rows": [
     {
       "attack": "htba",
       "label": "Saha (HTBA)",
       "cells": {
-        "resnet18": null,
-        "mobilenetv2": null,
-        "vgg11": null
+        "resnet18": {
+          "clean_accuracy": 0.9250999689102173,
+          "source_accuracy": 0.9300000667572021,
+          "asr": 0.02500000037252903,
+          "asr_clean_correct": 0.017204301431775093,
+          "source_test_count": 1000,
+          "source_clean_correct_count": 930,
+          "asr_definition": "all held-out source images; uniformly random patch location"
+        },
+        "mobilenetv2": {
+          "clean_accuracy": 0.887999951839447,
+          "source_accuracy": 0.909000039100647,
+          "asr": 0.024000000208616257,
+          "asr_clean_correct": 0.011001099832355976,
+          "source_test_count": 1000,
+          "source_clean_correct_count": 909,
+          "asr_definition": "all held-out source images; uniformly random patch location"
+        },
+        "vgg11": {
+          "clean_accuracy": 0.8937000036239624,
+          "source_accuracy": 0.9130000472068787,
+          "asr": 0.1120000034570694,
+          "asr_clean_correct": 0.09090909361839294,
+          "source_test_count": 1000,
+          "source_clean_correct_count": 913,
+          "asr_definition": "all held-out source images; uniformly random patch location"
+        }
       },
-      "mean_asr": null,
-      "mean_clean_accuracy": null
+      "mean_asr": 0.05366666801273823,
+      "mean_clean_accuracy": 0.9022666414578756
     },
     {
       "attack": "clba",
       "label": "Turner (CLBA)",
       "cells": {
-        "resnet18": null,
-        "mobilenetv2": null,
-        "vgg11": null
+        "resnet18": {
+          "clean_accuracy": 0.9235999584197998,
+          "source_accuracy": 0.9450000524520874,
+          "asr": 0.009000000543892384,
+          "asr_clean_correct": 0.002116402145475149,
+          "source_test_count": 1000,
+          "source_clean_correct_count": 945,
+          "asr_definition": "all held-out source images; uniformly random patch location"
+        },
+        "mobilenetv2": {
+          "clean_accuracy": 0.8878999948501587,
+          "source_accuracy": 0.9040000438690186,
+          "asr": 0.03700000047683716,
+          "asr_clean_correct": 0.027654867619276047,
+          "source_test_count": 1000,
+          "source_clean_correct_count": 904,
+          "asr_definition": "all held-out source images; uniformly random patch location"
+        },
+        "vgg11": {
+          "clean_accuracy": 0.8895999789237976,
+          "source_accuracy": 0.9110000729560852,
+          "asr": 0.05000000074505806,
+          "asr_clean_correct": 0.03512623533606529,
+          "source_test_count": 1000,
+          "source_clean_correct_count": 911,
+          "asr_definition": "all held-out source images; uniformly random patch location"
+        }
       },
-      "mean_asr": null,
-      "mean_clean_accuracy": null
+      "mean_asr": 0.03200000058859587,
+      "mean_clean_accuracy": 0.9003666440645853
     },
     {
       "attack": "full",
@@ -41,20 +89,100 @@
           "source_clean_correct_count": 941,
           "asr_definition": "all held-out source images; uniformly random patch location"
         },
-        "mobilenetv2": null,
-        "vgg11": null
+        "mobilenetv2": {
+          "clean_accuracy": 0.8853999972343445,
+          "source_accuracy": 0.9120000600814819,
+          "asr": 0.27900001406669617,
+          "asr_clean_correct": 0.27521929144859314,
+          "source_test_count": 1000,
+          "source_clean_correct_count": 912,
+          "asr_definition": "all held-out source images; uniformly random patch location"
+        },
+        "vgg11": {
+          "clean_accuracy": 0.8898999691009521,
+          "source_accuracy": 0.9260000586509705,
+          "asr": 0.984000027179718,
+          "asr_clean_correct": 0.9870409965515137,
+          "source_test_count": 1000,
+          "source_clean_correct_count": 926,
+          "asr_definition": "all held-out source images; uniformly random patch location"
+        }
       },
-      "mean_asr": null,
-      "mean_clean_accuracy": null
+      "mean_asr": 0.7540000379085541,
+      "mean_clean_accuracy": 0.8991666436195374
     }
   ],
   "provenance": [
+    {
+      "attack": "clba",
+      "architecture": "mobilenetv2",
+      "directory": "results\\table6\\cells\\mobilenetv2_clba_fb748a642d5a",
+      "reused": false,
+      "reused_from": null,
+      "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
+    },
+    {
+      "attack": "full",
+      "architecture": "mobilenetv2",
+      "directory": "results\\table6\\cells\\mobilenetv2_full_f19d32969f3b",
+      "reused": false,
+      "reused_from": null,
+      "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
+    },
+    {
+      "attack": "htba",
+      "architecture": "mobilenetv2",
+      "directory": "results\\table6\\cells\\mobilenetv2_htba_cb13e83333ae",
+      "reused": false,
+      "reused_from": null,
+      "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
+    },
+    {
+      "attack": "clba",
+      "architecture": "resnet18",
+      "directory": "results\\table6\\cells\\resnet18_clba_8fab5343a7d9",
+      "reused": false,
+      "reused_from": null,
+      "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
+    },
     {
       "attack": "full",
       "architecture": "resnet18",
       "directory": "results\\table6\\cells\\resnet18_full_32a58e044e4c",
       "reused": true,
       "reused_from": "results\\full\\0-1_s17_full_6e499e05ba36\\result.json",
+      "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
+    },
+    {
+      "attack": "htba",
+      "architecture": "resnet18",
+      "directory": "results\\table6\\cells\\resnet18_htba_fd878e6a67dc",
+      "reused": false,
+      "reused_from": null,
+      "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
+    },
+    {
+      "attack": "clba",
+      "architecture": "vgg11",
+      "directory": "results\\table6\\cells\\vgg11_clba_709fce4e6681",
+      "reused": false,
+      "reused_from": null,
+      "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
+    },
+    {
+      "attack": "full",
+      "architecture": "vgg11",
+      "directory": "results\\table6\\cells\\vgg11_full_eaad84c4b7fa",
+      "reused": false,
+      "reused_from": null,
+      "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
+    },
+    {
+      "attack": "htba",
+      "architecture": "vgg11",
+      "directory": "results\\table6\\cells\\vgg11_htba_669da0b9178e",
+      "reused": false,
+      "reused_from": null,
       "protocol": "table6-v1-clean-surrogate-clipped-trigger-greedy-bijection"
     }
   ],
