@@ -36,8 +36,6 @@ uv pip install --python .venv/Scripts/python.exe -r requirements-lock.txt
 .venv/Scripts/python.exe scripts/download_data.py
 ```
 
-The Windows environment was tested on the experiment machine. The macOS commands install the packages needed by the README builder; they do not reproduce GPU training. The downloader fetches the official CIFAR-10 archive and checks its checksum.
-
 An 80-epoch ResNet-18 victim took about 38 minutes. A full attack also needs poison crafting and surrogate training. The architecture comparison finished in about 14.6 hours of active runner time, including CPU work and checkpoint writes, with one result reused. Tests can be run with `.venv/Scripts/python.exe -m pytest -q`; on Linux, use `.venv/bin/python`. The full experiment test suite expects the training environment; the macOS commands above cover report generation only.
 
 ## Run
