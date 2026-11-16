@@ -1,71 +1,111 @@
 # Sleeper Agent: Clean-Label Backdoors on CIFAR-10
 
-From-scratch reproduction of Souri et al., *Sleeper Agent: Scalable Hidden Trigger Backdoors for Neural Networks Trained from Scratch* (NeurIPS 2022), for the ECE 491E empiricist role. [Paper](https://arxiv.org/abs/2106.08970) · [reference implementation](https://github.com/hsouri/Sleeper-Agent).
+This repository contains an independent implementation of Souri et al.'s *Sleeper Agent: Scalable Hidden Trigger Backdoors for Neural Networks Trained from Scratch* (NeurIPS 2022), for ECE 491E. [Paper](https://arxiv.org/abs/2106.08970) · [reference implementation](https://github.com/hsouri/Sleeper-Agent).
 
-The attack subtly changes **500 correctly labeled training images (1%)**. A victim trained from scratch behaves normally on ordinary images, but an **8×8 sticker** on a source-class test image makes it predict the target class. The sticker is never inserted into the victim's training images.
+Sleeper Agent changes 500 correctly labeled CIFAR-10 training images, or 1% of the dataset. The changes are designed to make a model learn a hidden error: when an 8×8 trigger is added to a source-class test image, the model predicts the chosen target class. The visible trigger is absent from the victim's training images.
 
-**Headline:** the full attack reached **99.77% mean attack success rate (ASR)** with **92.41% clean accuracy** across **three source/target pairs** (12 attack trials + all noise controls completed).
+The project includes an earlier three-pair ResNet-18 ablation study and an attack comparison run over November 14–15, 2026. In the ablation, the full attack averaged 99.77% attack success with 92.41% clean accuracy. The later comparison tested ResNet-18, MobileNetV2, and VGG11 on one class pair. All completed results are reported below, including the lower MobileNetV2 result.
 
 ## Setup
 
-Requires Python 3.12 and a CUDA 12.8-compatible NVIDIA GPU (tested on an RTX 5070 Ti Laptop, 12 GB VRAM, 32 GB RAM). From the repository root:
+The experiments used Python 3.12, PyTorch with CUDA 12.8, and an RTX 5070 Ti Laptop GPU with 12 GB VRAM and 32 GB system RAM. From the repository root:
 
 ```powershell
-# 1. Create the environment
 uv venv --python 3.12 .venv
 uv pip install --python .venv/Scripts/python.exe -r requirements-lock.txt
 
-# 2. Check the GPU is visible
 .venv/Scripts/python.exe -c "import torch; print(torch.__version__, torch.cuda.is_available())"
-
-# 3. Download CIFAR-10 (official source, checksum-verified) into data/
 .venv/Scripts/python.exe scripts/download_data.py
 
-# 4. Optional: run the correctness tests
 .venv/Scripts/python.exe -m pytest -q
 ```
 
-`requirements-lock.txt` pins the exact tested versions; `requirements.txt` lists direct dependencies. `results/` and `data/` are not tracked by Git; only load PyTorch checkpoints you trust.
+`requirements-lock.txt` records the tested dependency versions. The dataset and local checkpoints are stored in `data/` and `results/`, which are excluded from Git. Forty correctness tests passed after the re-scoring step was added.
 
 ## Run
 
-**Quick smoke test** (small model, few classes; checks that everything executes, *not* a measure of attack strength):
+The commands in this first block train models. The smoke run checks the pipeline with smaller settings; its scores are not used in the results.
 
 ```powershell
-.venv/Scripts/python.exe -m src.run_ablation --config configs/smoke.yaml
-```
+# Small development run
+.venv/Scripts/python.exe -m src.run_ablation --config configs/smoke.yaml --arms fixed random select full
 
-**One full-scale attack** (airplane → automobile, seed 17; all four ablation arms):
-
-```powershell
+# The four evaluated ablation configurations on airplane → automobile
 .venv/Scripts/python.exe -m src.run_ablation --config configs/cifar10_full.yaml --pairs 1 --arms fixed random select full
-```
 
-Use `--arms full` to run only the complete attack. Arms: `fixed` (fixed patch), `random` (random patch), `select` (+ gradient-norm selection), `full` (+ 4 surrogate retrains), `retrain` (retraining without selection). Runs checkpoint every epoch / every 5 crafting steps and skip completed trials, so re-running the same command resumes. Outputs go to `results/full/`.
-
-**The full three-pair study** shown in the results (12 attack trials plus controls; pairs and seeds in [configs/main_study.json](configs/main_study.json)). It writes `reports/main_study/measurements.json`, `summary.json` and `controls.json`:
-
-```powershell
+# Three-pair ResNet-18 study
 .venv/Scripts/python.exe -u scripts/run_study.py
+
+# Check and run the nine-cell architecture comparison
+.venv/Scripts/python.exe scripts/table6_preflight.py
+.venv/Scripts/python.exe scripts/run_table6.py --log-file results/table6/run.log
 ```
 
-**Rebuild the figures and this README** from saved measurements (no training):
+The comparison runner requires passing tests, nine smoke cells, and a measured estimate of at most 22 hours before launching. It saves checkpoints, skips completed cells, and writes status to [progress.md](progress.md). The November 14–15 run finished in about 14.6 hours of active runner time, including CPU work and checkpoint writes. It reused the completed ResNet-18 Sleeper Agent result.
+
+These commands use saved results and do not train models:
 
 ```powershell
-.venv/Scripts/python.exe -m analysis.build_readme --skip-examples
+# Evaluate the nine saved victims at fixed and random trigger positions
+.venv/Scripts/python.exe scripts/rescore_table6.py
+
+# Rebuild this README and the architecture-comparison figure
+.venv/Scripts/python.exe -m analysis.build_readme --table6-only
 ```
 
-Omit `--skip-examples` to also regenerate the example images (needs CIFAR-10 and the saved victim checkpoints in `results/`).
-
-**Cost:** one standard epoch took about **28 s**, so an 80-epoch victim took about **38 min** on the laptop above.
+Re-scoring requires the local checkpoints, including the original reused ResNet-18 checkpoint. Rebuilding the README uses the saved report files. The older `--skip-examples` command also regenerates the original ablation figures; `--table6-only` leaves those files unchanged.
 
 ## Results
 
-ASR is the percentage of **all 1,000 held-out source-class test images** classified as the target after the patch is pasted at a random location. Clean accuracy uses all 10,000 CIFAR-10 test images.
+Attack success rate (ASR) is the percentage of all 1,000 held-out source-class test images classified as the target after adding the trigger. Clean accuracy is measured on all 10,000 unmodified CIFAR-10 test images. Trigger position is stated separately for each table.
 
-### 1. Ablation vs. the paper
+### 1. Attack comparison across architectures
 
-![Paper and reproduction ASR comparison](reports/main_study/figures/01_reproduction_vs_paper.png)
+The weekend run compared Hidden-Trigger Backdoor (HTBA, Saha et al.), Clean-Label Backdoor (CLBA, Turner et al.), and Sleeper Agent. Each attack was crafted using the same architecture as its fresh victim. All cells used airplane → automobile (`0→1`), seed `17`, 500 target-class poisons, an 8×8 trigger, and an 80-epoch victim.
+
+*one pair (airplane->automobile), one seed; not a statistical reproduction*
+
+![Attack success with method-specific and random test positions](reports/table6/figures/01_native_and_random_asr.png)
+
+**Native test protocol.** HTBA uses a fixed position inset five pixels from the bottom-right, `(19,19)`. CLBA uses the bottom-right corner, `(24,24)`. Sleeper Agent uses uniformly random positions. Coordinates are zero-based `(row,column)`. This is a method-specific placement comparison; the remaining differences from the reference benchmark are listed below.
+
+| Attack | ResNet-18 | MobileNetV2 | VGG11 | Average |
+|---|---:|---:|---:|---:|
+| Saha (HTBA) | 4.90% | 2.70% | 10.60% | 6.07% |
+| Turner (CLBA) | 0.90% | 1.10% | 6.60% | 2.87% |
+| Sleeper Agent | 99.90% | 27.90% | 98.40% | 75.40% |
+
+**All attacks with a random trigger position.** Every method uses the same evaluation seed, `717`, and batch size, `128`.
+
+| Attack | ResNet-18 | MobileNetV2 | VGG11 | Average |
+|---|---:|---:|---:|---:|
+| Saha (HTBA) | 2.50% | 2.40% | 11.20% | 5.37% |
+| Turner (CLBA) | 0.90% | 3.70% | 5.00% | 3.20% |
+| Sleeper Agent | 99.90% | 27.90% | 98.40% | 75.40% |
+
+The row average is across architectures. It is not an average over repeated class pairs or seeds, and there are no error bars for this one-trial-per-cell comparison.
+
+The fixed and random scores were obtained by loading the same saved victims, without retraining. All nine random ASRs and clean accuracies matched the original cell results. The re-scoring script reported 24.8 seconds. With Sleeper Agent fixed at `(24,24)`, ASR was 96.50% on ResNet-18, 4.00% on MobileNetV2, 39.10% on VGG11. These results show that trigger position affected the outcome in this trial.
+
+**Clean accuracy for the same victims:**
+
+| Attack | ResNet-18 | MobileNetV2 | VGG11 | Average |
+|---|---:|---:|---:|---:|
+| Saha (HTBA) | 92.51% | 88.80% | 89.37% | 90.23% |
+| Turner (CLBA) | 92.36% | 88.79% | 88.96% | 90.04% |
+| Sleeper Agent | 92.22% | 88.54% | 88.99% | 89.92% |
+
+Sleeper Agent reached high random-position ASR on ResNet-18 and VGG11, but 27.90% on MobileNetV2. MobileNetV2's clean accuracy was 88.54%. One pair and one seed are not enough to determine whether that gap is typical or to identify its cause.
+
+The baseline implementations also differ from an exact replication: CLBA used a clean surrogate instead of the benchmark's adversarially trained surrogate. HTBA uses a corrected one-to-one greedy feature assignment. The same seeded random trigger was used across cells, and CLBA's stamped training trigger was projected back into the pixel-change bound. Full settings and sources are in [table6_baselines.md](docs/table6_baselines.md).
+
+Saved outputs: [re-scored results](reports/table6/rescored.json), [comparison report](reports/table6/table6.md), and [original random-position summary](reports/table6/summary.json).
+
+### 2. ResNet-18 ablation
+
+The earlier study tested four Sleeper Agent configurations across three source/target pairs. All four were evaluated with random test-time trigger positions. The fixed/random distinction in this table refers to placement during poison crafting.
+
+![ResNet-18 ablation compared with the paper](reports/main_study/figures/01_reproduction_vs_paper.png)
 
 | Configuration | Patch during crafting | Selection | Retrains | Paper ASR ± SE | Our ASR ± SE | n | Clean accuracy |
 |---|---|---|---:|---:|---:|---:|---:|
@@ -74,11 +114,13 @@ ASR is the percentage of **all 1,000 held-out source-class test images** classif
 | Random + selection | Random | Largest full-gradient norms | 0 | 63.49 ± 6.13% | 90.97 ± 7.89% | 3 | 92.37% |
 | Full attack | Random | Largest full-gradient norms | 4 | 85.27 ± 5.90% | 99.77 ± 0.07% | 3 | 92.41% |
 
-Error bars are **one standard error across three pair/seed trials** (n = 3, same pairs in every arm). The table contains the four configurations evaluated in this study. The paper's values come from a different set of trials and are reference points, not matched comparisons. Our ordering matches the paper (fixed < random < random + selection < full).
+Values are means ± one standard error across three pair/seed trials. The same pairs were used in every configuration. The paper's Table 10 values are reference points from a different set of trials. This study did not run the separate retraining-without-selection configuration.
 
-### 2. Per-pair results
+Mean ASR increased from fixed placement through random placement, selection, and retraining. With only three pair/seed trials, the smaller differences between configurations remain uncertain.
 
-![ASR by configuration for each source/target pair](reports/main_study/figures/02_pairwise_asr.png)
+### 3. Results by class pair
+
+![ResNet-18 ASR for each pair and configuration](reports/main_study/figures/02_pairwise_asr.png)
 
 | Source → target | Seed | Fixed | Random | Random + selection | Full |
 |---|---:|---:|---:|---:|---:|
@@ -86,13 +128,11 @@ Error bars are **one standard error across three pair/seed trials** (n = 3, same
 | Truck → dog | `368152593` | 5.8% | 34.0% | 75.2% | 99.7% |
 | Deer → frog | `1231470895` | 3.5% | 97.9% | 99.5% | 99.7% |
 
-The random-patch arm ranges from **34.0% to 97.9%**, selection lifts truck → dog to **75.2%**, and the full attack reaches **99.7–99.9%** on all three pairs. Each pair has one seed, so pair difficulty and initialization effects are not separated.
+The random-patch configuration varied from 34.0% to 97.9% ASR across pairs. The full attack reached 99.7–99.9%. Since each pair has one seed, class-pair difficulty and initialization effects are not separated.
 
-Mean gains along the sequence: **+52.17 points** for random placement, **+34.80** for selection, **+8.80** for retraining. Each incremental paired 95% t-interval includes zero at n = 3. The full-minus-fixed gain is **+95.77 points**, 95% interval **[91.56, 99.97]**. These are exploratory, unadjusted small-sample intervals.
+### 4. Clean and noise controls
 
-### 3. Controls: is poisoning doing the work?
-
-![Clean and noise controls, and clean classification accuracy](reports/main_study/figures/03_controls_and_accuracy.png)
+![Clean and noise controls alongside clean accuracy](reports/main_study/figures/03_controls_and_accuracy.png)
 
 | Source → target | Clean model + patch | Random-noise control | Selected-noise control | Full attack |
 |---|---:|---:|---:|---:|
@@ -100,32 +140,38 @@ Mean gains along the sequence: **+52.17 points** for random placement, **+34.80*
 | Truck → dog | 0.3% | 0.1% | 0.2% | 99.7% |
 | Deer → frog | 3.2% | 0.6% | 0.1% | 99.7% |
 
-A clean model with the patch gets only **0.3–3.2%** ASR, and models trained with random or selected *noise* of the same budget stay at **0.1–2.3%**, while the full attack exceeds 99% on every pair. The patch alone does not explain the attack. The shared clean model has **92.18%** accuracy and every attacked victim stays within **0.5 points** of it, so the backdoor is invisible to ordinary accuracy checks.
+The clean-model control uses the trigger without poisoning. The noise controls replace optimized poison changes with random noise of the same bound, on either randomly chosen or gradient-selected images. Their low ASRs support a poisoning-induced effect in the three tested pairs. The full attack's mean clean accuracy was 92.41%, compared with 92.18% for the shared clean baseline.
 
-### 4. What the poisons look like
+These controls belong to the three-pair ResNet-18 study. They were not repeated for every cell of the architecture comparison.
 
-![Clean, poisoned, amplified differences, and patched held-out examples](reports/main_study/figures/04_poison_examples.png)
+### 5. Poison examples
 
-Columns 1–2: the **same target-class training image** before and after poisoning (label unchanged). Column 3: the difference, amplified for visibility. Columns 4–5: a **source-class test image** without and with the trigger, labeled with the full-attack victim's predictions. One clean-correct, trigger-flipped example per pair is shown for illustration; the ASR numbers above use all 1,000 source images.
+![Original and poisoned training images, differences, and triggered test images](reports/main_study/figures/04_poison_examples.png)
 
-Every run passed checks for exactly 500 changed images, unchanged labels, target-class-only poisons, valid pixel range, `max(abs(delta)) <= 16/255 + 1e-6`, and absence of the exact trigger in training data.
+The first two columns show the same target-class training image before and after poisoning, with its label unchanged. The third column amplifies the difference. The last two show a held-out source image before and after adding the trigger, with the victim's predictions. One clean-correct, trigger-flipped example was selected per pair for illustration; the reported ASR uses all 1,000 source images.
 
-### 5. Gradient alignment
+The main-study runs checked that exactly 500 target-class images changed, labels stayed unchanged, pixel changes stayed within `16/255`, pixels remained valid, and the exact trigger was absent from the training data. CLBA intentionally includes a clipped training trigger, so its checks allow that exception while still checking the perturbation bound before and after stamping.
 
-![Crafting and victim-training gradient alignment](reports/main_study/figures/05_gradient_alignment.png)
+### 6. Gradient alignment
 
-Left: alignment during crafting using the full poison gradient; dotted lines mark the four surrogate refreshes. Right: alignment while training the victim on the original pair's **16-example telemetry subset** (so its scale differs from the 500-image objective). Alignment is a diagnostic; held-out ASR and the controls are the behavioral evidence.
+![Gradient alignment during crafting and victim training](reports/main_study/figures/05_gradient_alignment.png)
 
-## How the attack works
+The left plot tracks the full poison gradient during crafting; dotted lines mark surrogate refreshes. The right plot uses a 16-example subset during victim training on airplane → automobile. The scales differ because the subsets differ. Alignment checks the crafting objective; held-out ASR and the controls measure the resulting behavior.
 
-1. **Train a clean surrogate** (shared across pairs, also used as the clean baseline).
-2. **Pick 500 target-class images**: random, or those with the largest parameter-gradient norms.
-3. **Craft perturbations** (≤ 16/255) so the training gradient of the poisons aligns with the gradient of *patched source images labeled as the target*.
-4. **Refresh the surrogate** (full arm): retrain from scratch on the current poisoned data 4 times during crafting.
-5. **Train a fresh victim** on the poisoned dataset and evaluate on held-out images.
+## How Sleeper Agent makes the poison
+
+1. Train a clean surrogate for 40 epochs.
+2. Choose 500 target-class training images, randomly or by full-parameter gradient norm.
+3. Adjust their pixels so learning from them pushes the model in a similar direction to learning that patched source images belong to the target class. This is gradient matching. The poisoned images keep their true labels.
+4. In the full attack, train a new surrogate on the current poisoned dataset four times during crafting, then continue optimizing the images.
+5. Train a separate victim from scratch on the final poisoned dataset for 80 epochs and evaluate it on held-out test images.
+
+The clean control is a separate 80-epoch model. The initial surrogate and clean control were each reused across the three ablation pairs to reduce compute.
 
 <details>
-<summary>Core objective (explanatory excerpt; the real code is in src/craft.py)</summary>
+<summary>Core objective and settings</summary>
+
+The following is an explanatory excerpt. The implementation is in [src/craft.py](src/craft.py).
 
 ```python
 params = tuple(surrogate.parameters())
@@ -142,50 +188,57 @@ g = torch.cat([v.reshape(-1) for v in grad_train])
 alignment_loss = 1 - cosine_similarity(g[None], a[None])[0]
 
 for step in range(250):
-    cosine, grad = alignment_step(...)  # exact two-pass derivative
+    cosine, grad = alignment_step(...)
     signed_adam_step(optimizer, delta, grad, units="normalized")
     project(delta, clean, epsilon=16 / 255)
-    if step + 1 in (50, 100, 150, 200):  # full arm only
+    if step + 1 in (50, 100, 150, 200):
         surrogate = train_fresh_surrogate(current_poisoned_data, epochs=40)
         a = recompute_adversarial_gradient(surrogate).detach()
 ```
 
-The implementation evaluates the derivative in two passes to avoid holding double-backward graphs for all 500 images; direct-gradient and finite-difference tests verify it. Crop/flip augmentation is differentiable, and BatchNorm statistics are fixed during crafting.
-
-</details>
+The two-pass derivative avoids keeping second-derivative graphs for all 500 images in memory at once. Tests compare it with direct differentiation and finite differences. Crop/flip augmentation is differentiable, and BatchNorm statistics are frozen during crafting.
 
 | Setting | Value |
 |---|---|
-| Data / architecture | Full CIFAR-10 / CIFAR ResNet-18 (3×3 stem, no maxpool) |
+| Dataset | Full CIFAR-10 |
 | Poison budget / bound | 500 target-class images / 16/255 in pixel space |
-| Trigger / source gradient | Seeded Bernoulli 8×8 patch / 512 source training images |
-| Training | SGD, Nesterov 0.9, LR 0.1, weight decay 4e-4, batch 128 |
+| Trigger / source-gradient pool | Seeded Bernoulli RGB 8×8 patch / 512 source training images |
+| Training | SGD, Nesterov 0.9, weight decay 4e-4, batch 128 |
+| Initial learning rate | ResNet-18: 0.1; MobileNetV2 and VGG11: 0.01 |
 | Epochs | 40 initial surrogate, 40 per refresh, 80 per victim/control |
-| LR drops | ×0.1 at epochs 14, 24, 35 |
-| Crafting | 250 signed-Adam steps, normalized-coordinate LR 0.025, ×0.1 at steps 93, 156, 218 |
-| Surrogate retraining | T = 0 or 4; fresh initialization at each refresh |
-| Precision | Mixed precision for training; FP32 for crafting |
+| Learning-rate drops | Factor 0.1 at epochs 14, 24, 35 |
+| Sleeper crafting | 250 signed-Adam steps, normalized-coordinate LR 0.025 |
+| Crafting LR drops | Factor 0.1 at steps 93, 156, 218 |
+| Surrogate refreshes | None in the reduced configurations; four fresh initializations in the full attack |
+| Precision | Mixed precision for training; FP32 for crafting and evaluation |
 
-Full settings: [configs/cifar10_full.yaml](configs/cifar10_full.yaml).
+Configs: [ResNet ablation](configs/cifar10_full.yaml), [ResNet comparison](configs/table6_resnet18.yaml), [MobileNetV2](configs/table6_mobilenetv2.yaml), [VGG11](configs/table6_vgg11.yaml).
+
+</details>
 
 ## Limitations
 
-- Only 3 pair/seed trials per arm, so the small incremental gaps between arms are not statistically settled.
-- This study covers four selected configurations from Table 10. More pairs/seeds, ImageNet, cross-architecture transfer, defenses, and epsilon/retraining sweeps were not run.
-- Surrogate initial weights are shared across pairs, which saves compute but does not sample surrogate-initialization variance.
-- Reference code was consulted only for the signed-Adam schedule and the fresh-initialization retraining choice; everything else is an independent implementation.
+- The ablation has three pair/seed trials per configuration. The architecture comparison has one pair and one seed per cell.
+- Each architecture comparison cell crafts and tests on the same architecture with a fresh victim initialization. Cross-architecture transfer was not tested.
+- The comparison retains the CLBA surrogate, HTBA matching, trigger, and placement differences described above. It is not an exact numerical reproduction of Table 6.
+- Fixed/random re-scoring changes evaluation only. It does not show how the models would behave after crafting a different poison or using another seed.
+- ImageNet, defenses, more pairs/seeds, and perturbation-budget or retraining-factor sweeps were not run.
+- The Sleeper Agent implementation is independent. The baseline algorithms and new architecture definitions were checked against the cited benchmark source; those adaptations are documented separately.
 
 ## Repository layout
 
 ```text
-src/                          data, model, selection, crafting, victim training/evaluation
-scripts/                      CIFAR-10 download, main-study runner
-analysis/build_readme.py      saved measurements → README and figures
-configs/                      full recipe, smoke config, main-study pairs
-reports/main_study/           frozen measurements, summary, controls, figures used above
-reports/smoke/                development-only evidence
-tests/                        correctness tests
-results/, data/               local checkpoints, logs, dataset (not tracked by Git)
+src/                          data, models, poison crafting, victim training and evaluation
+scripts/run_study.py           three-pair ResNet-18 ablation
+scripts/run_table6.py          nine-cell attack comparison
+scripts/rescore_table6.py      fixed/random evaluation of saved victims
+analysis/build_readme.py       report data → README and figures
+analysis/README.template.md    README wording and structure
+configs/                      training recipes and study pairs
+reports/main_study/            saved ablation measurements and original figures
+reports/table6/                comparison, re-scoring, and figure
+tests/                        correctness checks
+results/, data/               local checkpoints, logs, and dataset (not tracked by Git)
 ```
 
-Primary data: [measurements.json](reports/main_study/measurements.json), [summary.json](reports/main_study/summary.json), [controls.json](reports/main_study/controls.json), and [presentation_data.json](reports/main_study/presentation_data.json) (compact export of the plotted values). The original eight-pair study design is in [docs/original_study_plan.md](docs/original_study_plan.md).
+The ablation's source data are [measurements.json](reports/main_study/measurements.json), [summary.json](reports/main_study/summary.json), and [controls.json](reports/main_study/controls.json). The weekend comparison and both test placements are recorded in [rescored.json](reports/table6/rescored.json). The earlier eight-pair proposal is retained in [original_study_plan.md](docs/original_study_plan.md); it describes the original plan, not the completed experiment count.

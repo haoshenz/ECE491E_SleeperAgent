@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 import json
 import textwrap
+from string import Template
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -23,6 +24,69 @@ COLORS = ('#7b3294', '#2166ac', '#1b7837')
 ARM_COLORS = ('#7b3294', '#2166ac', '#d95f02', '#1b7837')
 PAPER = np.array([19.25, 33.95, 63.49, 85.27])
 PAPER_SE = np.array([3.01, 4.57, 6.13, 5.90])
+TABLE6 = ROOT/'reports/table6'
+ARCHITECTURES = ('resnet18', 'mobilenetv2', 'vgg11')
+ARCH_LABELS = ('ResNet-18', 'MobileNetV2', 'VGG11')
+
+
+def load_table6():
+    data = json.loads((TABLE6/'rescored.json').read_text(encoding='utf-8'))
+    assert data['all_random_scores_match_original']
+    assert (data['source'], data['target'], data['seed']) == (0, 1, 17)
+    assert data['test_images'] == 10000 and data['source_test_images'] == 1000
+    cells = {(r['attack'], r['architecture']): r for r in data['cells']}
+    expected = {(attack, arch) for attack in ('htba', 'clba', 'full') for arch in ARCHITECTURES}
+    assert len(data['cells']) == len(cells) == 9 and set(cells) == expected
+    for protocol in ('native', 'random'):
+        for row in data['tables'][protocol]:
+            mode = 'fixed' if protocol == 'native' and row['attack'] != 'full' else 'random'
+            values = [cells[row['attack'], arch][mode]['asr'] for arch in ARCHITECTURES]
+            assert row['test_placement'] == mode
+            assert all(np.isclose(row['asr'][arch], value) for arch, value in zip(ARCHITECTURES, values))
+            assert np.isclose(row['mean_asr'], np.mean(values))
+    return data
+
+
+def attack_table(rows):
+    lines = ['| Attack | ResNet-18 | MobileNetV2 | VGG11 | Average |', '|---|---:|---:|---:|---:|']
+    for row in rows:
+        values = [row['asr'][arch] for arch in ARCHITECTURES]+[row['mean_asr']]
+        lines.append('| '+' | '.join([row['label'], *[f'{100*v:.2f}%' for v in values]])+' |')
+    return '\n'.join(lines)
+
+
+def clean_table(data):
+    cells = {(r['attack'], r['architecture']): r for r in data['cells']}
+    rows = []
+    for row in data['tables']['native']:
+        values = {arch: cells[row['attack'], arch]['random']['clean_accuracy'] for arch in ARCHITECTURES}
+        rows.append({'label': row['label'], 'asr': values, 'mean_asr': np.mean(list(values.values()))})
+    return attack_table(rows)
+
+
+def make_table6_chart(data):
+    style()
+    fig, axes = plt.subplots(1, 2, figsize=(12.8, 5.3), sharey=True)
+    x = np.arange(3)
+    colors = ('#7570b3', '#d95f02', '#1b7837')
+    for ax, protocol, title in zip(axes, ('native', 'random'),
+                                   ('Native test protocol', 'All attacks: random trigger position')):
+        for i, (row, color) in enumerate(zip(data['tables'][protocol], colors)):
+            values = [100*row['asr'][arch] for arch in ARCHITECTURES]
+            bars = ax.bar(x+(i-1)*.25, values, .23, color=color, label=row['label'])
+            ax.bar_label(bars, labels=[f'{v:.1f}' for v in values], padding=3, fontsize=8)
+        ax.set(title=title, xticks=x, xticklabels=ARCH_LABELS, ylim=(0, 110),
+               yticks=np.arange(0, 101, 20))
+        ax.grid(axis='y', alpha=.2)
+    axes[0].set_ylabel('Attack success rate (%)')
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', ncol=3, bbox_to_anchor=(.5, .015))
+    fig.suptitle('Airplane → automobile, seed 17', fontsize=14, y=.98)
+    fig.subplots_adjust(left=.07, right=.985, top=.85, bottom=.17, wspace=.13)
+    destination = TABLE6/'figures/01_native_and_random_asr.png'
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(destination, dpi=180, bbox_inches='tight', facecolor='white')
+    plt.close(fig)
 
 
 def load():
@@ -181,7 +245,7 @@ def make_examples(rows):
     save(fig, '04_poison_examples')
 
 
-def build_readme(rows, asr, acc, clean, noise):
+def build_readme(rows, asr, acc, clean, noise, write_presentation_data=True):
     mean = asr.mean(0); error = sem(asr)
     table = ['| Configuration | Patch during crafting | Selection | Retrains | Paper ASR ± SE | Our ASR ± SE | n | Clean accuracy |',
              '|---|---|---|---:|---:|---:|---:|---:|']
@@ -199,185 +263,19 @@ def build_readme(rows, asr, acc, clean, noise):
     difference = asr[:, 3]-asr[:, 0]
     radius = float(t.ppf(.975, 2)*sem(difference))
     lo, hi = difference.mean()-radius, difference.mean()+radius
-    text = f'''# Sleeper Agent: Clean-Label Backdoors on CIFAR-10
-
-From-scratch reproduction of Souri et al., *Sleeper Agent: Scalable Hidden Trigger Backdoors for Neural Networks Trained from Scratch* (NeurIPS 2022), for the ECE 491E empiricist role. [Paper](https://arxiv.org/abs/2106.08970) · [reference implementation](https://github.com/hsouri/Sleeper-Agent).
-
-The attack subtly changes **500 correctly labeled training images (1%)**. A victim trained from scratch behaves normally on ordinary images, but an **8×8 sticker** on a source-class test image makes it predict the target class. The sticker is never inserted into the victim's training images.
-
-**Headline:** the full attack reached **{mean[3]:.2f}% mean attack success rate (ASR)** with **{acc.mean(0)[3]:.2f}% clean accuracy** across **three source/target pairs** (12 attack trials + all noise controls completed).
-
-## Setup
-
-Requires Python 3.12 and a CUDA 12.8-compatible NVIDIA GPU (tested on an RTX 5070 Ti Laptop, 12 GB VRAM, 32 GB RAM). From the repository root:
-
-```powershell
-# 1. Create the environment
-uv venv --python 3.12 .venv
-uv pip install --python .venv/Scripts/python.exe -r requirements-lock.txt
-
-# 2. Check the GPU is visible
-.venv/Scripts/python.exe -c "import torch; print(torch.__version__, torch.cuda.is_available())"
-
-# 3. Download CIFAR-10 (official source, checksum-verified) into data/
-.venv/Scripts/python.exe scripts/download_data.py
-
-# 4. Optional: run the correctness tests
-.venv/Scripts/python.exe -m pytest -q
-```
-
-`requirements-lock.txt` pins the exact tested versions; `requirements.txt` lists direct dependencies. `results/` and `data/` are not tracked by Git; only load PyTorch checkpoints you trust.
-
-## Run
-
-**Quick smoke test** (small model, few classes; checks that everything executes, *not* a measure of attack strength):
-
-```powershell
-.venv/Scripts/python.exe -m src.run_ablation --config configs/smoke.yaml
-```
-
-**One full-scale attack** (airplane → automobile, seed 17; all four ablation arms):
-
-```powershell
-.venv/Scripts/python.exe -m src.run_ablation --config configs/cifar10_full.yaml --pairs 1 --arms fixed random select full
-```
-
-Use `--arms full` to run only the complete attack. Arms: `fixed` (fixed patch), `random` (random patch), `select` (+ gradient-norm selection), `full` (+ 4 surrogate retrains), `retrain` (retraining without selection). Runs checkpoint every epoch / every 5 crafting steps and skip completed trials, so re-running the same command resumes. Outputs go to `results/full/`.
-
-**The full three-pair study** shown in the results (12 attack trials plus controls; pairs and seeds in [configs/main_study.json](configs/main_study.json)). It writes `reports/main_study/measurements.json`, `summary.json` and `controls.json`:
-
-```powershell
-.venv/Scripts/python.exe -u scripts/run_study.py
-```
-
-**Rebuild the figures and this README** from saved measurements (no training):
-
-```powershell
-.venv/Scripts/python.exe -m analysis.build_readme --skip-examples
-```
-
-Omit `--skip-examples` to also regenerate the example images (needs CIFAR-10 and the saved victim checkpoints in `results/`).
-
-**Cost:** one standard epoch took about **28 s**, so an 80-epoch victim took about **38 min** on the laptop above.
-
-## Results
-
-ASR is the percentage of **all 1,000 held-out source-class test images** classified as the target after the patch is pasted at a random location. Clean accuracy uses all 10,000 CIFAR-10 test images.
-
-### 1. Ablation vs. the paper
-
-![Paper and reproduction ASR comparison](reports/main_study/figures/01_reproduction_vs_paper.png)
-
-{chr(10).join(table)}
-
-Error bars are **one standard error across three pair/seed trials** (n = 3, same pairs in every arm). The table contains the four configurations evaluated in this study. The paper's values come from a different set of trials and are reference points, not matched comparisons. Our ordering matches the paper (fixed < random < random + selection < full).
-
-### 2. Per-pair results
-
-![ASR by configuration for each source/target pair](reports/main_study/figures/02_pairwise_asr.png)
-
-{chr(10).join(pairs_table)}
-
-The random-patch arm ranges from **34.0% to 97.9%**, selection lifts truck → dog to **75.2%**, and the full attack reaches **99.7–99.9%** on all three pairs. Each pair has one seed, so pair difficulty and initialization effects are not separated.
-
-Mean gains along the sequence: **+{mean[1]-mean[0]:.2f} points** for random placement, **+{mean[2]-mean[1]:.2f}** for selection, **+{mean[3]-mean[2]:.2f}** for retraining. Each incremental paired 95% t-interval includes zero at n = 3. The full-minus-fixed gain is **+{difference.mean():.2f} points**, 95% interval **[{lo:.2f}, {hi:.2f}]**. These are exploratory, unadjusted small-sample intervals.
-
-### 3. Controls: is poisoning doing the work?
-
-![Clean and noise controls, and clean classification accuracy](reports/main_study/figures/03_controls_and_accuracy.png)
-
-{chr(10).join(controls_table)}
-
-A clean model with the patch gets only **0.3–3.2%** ASR, and models trained with random or selected *noise* of the same budget stay at **0.1–2.3%**, while the full attack exceeds 99% on every pair. The patch alone does not explain the attack. The shared clean model has **92.18%** accuracy and every attacked victim stays within **0.5 points** of it, so the backdoor is invisible to ordinary accuracy checks.
-
-### 4. What the poisons look like
-
-![Clean, poisoned, amplified differences, and patched held-out examples](reports/main_study/figures/04_poison_examples.png)
-
-Columns 1–2: the **same target-class training image** before and after poisoning (label unchanged). Column 3: the difference, amplified for visibility. Columns 4–5: a **source-class test image** without and with the trigger, labeled with the full-attack victim's predictions. One clean-correct, trigger-flipped example per pair is shown for illustration; the ASR numbers above use all 1,000 source images.
-
-Every run passed checks for exactly 500 changed images, unchanged labels, target-class-only poisons, valid pixel range, `max(abs(delta)) <= 16/255 + 1e-6`, and absence of the exact trigger in training data.
-
-### 5. Gradient alignment
-
-![Crafting and victim-training gradient alignment](reports/main_study/figures/05_gradient_alignment.png)
-
-Left: alignment during crafting using the full poison gradient; dotted lines mark the four surrogate refreshes. Right: alignment while training the victim on the original pair's **16-example telemetry subset** (so its scale differs from the 500-image objective). Alignment is a diagnostic; held-out ASR and the controls are the behavioral evidence.
-
-## How the attack works
-
-1. **Train a clean surrogate** (shared across pairs, also used as the clean baseline).
-2. **Pick 500 target-class images**: random, or those with the largest parameter-gradient norms.
-3. **Craft perturbations** (≤ 16/255) so the training gradient of the poisons aligns with the gradient of *patched source images labeled as the target*.
-4. **Refresh the surrogate** (full arm): retrain from scratch on the current poisoned data 4 times during crafting.
-5. **Train a fresh victim** on the poisoned dataset and evaluate on held-out images.
-
-<details>
-<summary>Core objective (explanatory excerpt; the real code is in src/craft.py)</summary>
-
-```python
-params = tuple(surrogate.parameters())
-grad_adv = torch.autograd.grad(
-    cross_entropy(surrogate(patched_source_train), target_labels), params
-)
-a = torch.cat([g.reshape(-1) for g in grad_adv]).detach()
-
-grad_train = torch.autograd.grad(
-    cross_entropy(surrogate(augment(clean + delta)), true_labels),
-    params, create_graph=True,
-)
-g = torch.cat([v.reshape(-1) for v in grad_train])
-alignment_loss = 1 - cosine_similarity(g[None], a[None])[0]
-
-for step in range(250):
-    cosine, grad = alignment_step(...)  # exact two-pass derivative
-    signed_adam_step(optimizer, delta, grad, units="normalized")
-    project(delta, clean, epsilon=16 / 255)
-    if step + 1 in (50, 100, 150, 200):  # full arm only
-        surrogate = train_fresh_surrogate(current_poisoned_data, epochs=40)
-        a = recompute_adversarial_gradient(surrogate).detach()
-```
-
-The implementation evaluates the derivative in two passes to avoid holding double-backward graphs for all 500 images; direct-gradient and finite-difference tests verify it. Crop/flip augmentation is differentiable, and BatchNorm statistics are fixed during crafting.
-
-</details>
-
-| Setting | Value |
-|---|---|
-| Data / architecture | Full CIFAR-10 / CIFAR ResNet-18 (3×3 stem, no maxpool) |
-| Poison budget / bound | 500 target-class images / 16/255 in pixel space |
-| Trigger / source gradient | Seeded Bernoulli 8×8 patch / 512 source training images |
-| Training | SGD, Nesterov 0.9, LR 0.1, weight decay 4e-4, batch 128 |
-| Epochs | 40 initial surrogate, 40 per refresh, 80 per victim/control |
-| LR drops | ×0.1 at epochs 14, 24, 35 |
-| Crafting | 250 signed-Adam steps, normalized-coordinate LR 0.025, ×0.1 at steps 93, 156, 218 |
-| Surrogate retraining | T = 0 or 4; fresh initialization at each refresh |
-| Precision | Mixed precision for training; FP32 for crafting |
-
-Full settings: [configs/cifar10_full.yaml](configs/cifar10_full.yaml).
-
-## Limitations
-
-- Only 3 pair/seed trials per arm, so the small incremental gaps between arms are not statistically settled.
-- This study covers four selected configurations from Table 10. More pairs/seeds, ImageNet, cross-architecture transfer, defenses, and epsilon/retraining sweeps were not run.
-- Surrogate initial weights are shared across pairs, which saves compute but does not sample surrogate-initialization variance.
-- Reference code was consulted only for the signed-Adam schedule and the fresh-initialization retraining choice; everything else is an independent implementation.
-
-## Repository layout
-
-```text
-src/                          data, model, selection, crafting, victim training/evaluation
-scripts/                      CIFAR-10 download, main-study runner
-analysis/build_readme.py      saved measurements → README and figures
-configs/                      full recipe, smoke config, main-study pairs
-reports/main_study/           frozen measurements, summary, controls, figures used above
-reports/smoke/                development-only evidence
-tests/                        correctness tests
-results/, data/               local checkpoints, logs, dataset (not tracked by Git)
-```
-
-Primary data: [measurements.json](reports/main_study/measurements.json), [summary.json](reports/main_study/summary.json), [controls.json](reports/main_study/controls.json), and [presentation_data.json](reports/main_study/presentation_data.json) (compact export of the plotted values). The original eight-pair study design is in [docs/original_study_plan.md](docs/original_study_plan.md).
-'''
+    comparison = load_table6()
+    fixed_cells = {r['architecture']: r for r in comparison['cells'] if r['attack'] == 'full'}
+    fixed_note = ', '.join(f"{100*fixed_cells[arch]['fixed']['asr']:.2f}% on {label}"
+                           for arch, label in zip(ARCHITECTURES, ARCH_LABELS))
+    template = Template((ROOT/'analysis/README.template.md').read_text(encoding='utf-8'))
+    text = template.substitute(
+        full_asr=f'{mean[3]:.2f}', full_clean=f'{acc.mean(0)[3]:.2f}',
+        ablation_table='\n'.join(table), pair_table='\n'.join(pairs_table),
+        controls_table='\n'.join(controls_table),
+        native_table=attack_table(comparison['tables']['native']),
+        random_table=attack_table(comparison['tables']['random']),
+        architecture_clean_table=clean_table(comparison),
+        sleeper_fixed_note=fixed_note, rescore_seconds=f"{comparison['elapsed_seconds']:.1f}")
     (ROOT/'README.md').write_text(text, encoding='utf-8')
     data = {'arms': list(ARMS), 'pairs': [list(p) for p in PAIRS], 'pair_labels': list(PAIR_LABELS),
             'asr_percent': asr.tolist(), 'clean_accuracy_percent': acc.tolist(),
@@ -385,21 +283,26 @@ Primary data: [measurements.json](reports/main_study/measurements.json), [summar
             'noise_asr_percent_random_then_gradient': noise.tolist(),
             'paper_means_percent': PAPER.tolist(), 'paper_se_percent': PAPER_SE.tolist(),
             'full_minus_fixed': {'n': 3, 'mean_pp': float(difference.mean()), 'ci95_pp': [float(lo), float(hi)]}}
-    (OUT/'presentation_data.json').write_text(json.dumps(data, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
+    if write_presentation_data:
+        (OUT/'presentation_data.json').write_text(json.dumps(data, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--skip-examples', action='store_true')
+    p.add_argument('--table6-only', action='store_true',
+                   help='Update README and the Table 6 figure; preserve all original main-study report files.')
     args = p.parse_args()
     rows, asr, acc, clean, noise = load()
-    make_charts(rows, asr, acc, clean, noise)
-    if not args.skip_examples:
-        make_examples(rows)
-    elif not (FIG/'04_poison_examples.png').exists():
-        raise FileNotFoundError('Image examples are not yet generated; run once without --skip-examples.')
-    build_readme(rows, asr, acc, clean, noise)
-    print(f'Rebuilt README and 5 figures from {len(rows)*4} completed trials.')
+    if not args.table6_only:
+        make_charts(rows, asr, acc, clean, noise)
+        if not args.skip_examples:
+            make_examples(rows)
+        elif not (FIG/'04_poison_examples.png').exists():
+            raise FileNotFoundError('Image examples are not yet generated; run once without --skip-examples.')
+    make_table6_chart(load_table6())
+    build_readme(rows, asr, acc, clean, noise, write_presentation_data=not args.table6_only)
+    print(f'Rebuilt README from {len(rows)*4} ablation trials and 9 comparison cells; updated Table 6 figure.')
 
 
 if __name__ == '__main__':
