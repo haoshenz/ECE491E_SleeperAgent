@@ -122,10 +122,8 @@ The ResNet-18 Sleeper Agent cell reuses the airplane → automobile full-attack 
 **The evidence is limited by trial count and differences in the comparison setup.**
 
 - The ablation has three pair/seed trials per configuration; the architecture comparison has one.
-- CLBA's surrogate, HTBA's matching, and trigger choices differ from the reference setup.
 - The reused ResNet-18 cell is shared evidence, not another independent trial.
 - Position re-scoring tests existing victims; it does not test new poisons or seeds.
-- ImageNet, defenses, cross-architecture transfer, and parameter sweeps were not tested.
 
 ### 4.5 Takeaway
 
